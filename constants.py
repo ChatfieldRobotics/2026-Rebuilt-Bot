@@ -5,6 +5,9 @@ from pathplannerlib.path import PathConstraints
 
 from math import pi
 
+class CANConstants: 
+    intake_motor: int = 6
+
 class NeoMotorConstants:
     free_speed_rpm = 5676
 

@@ -1,7 +1,7 @@
 from typing import List
 from constants import VisionConstants
 
-from simple_state_system import StateSystem
+from simple_state_system import *
 
 from robotpy_apriltag import AprilTagFieldLayout, AprilTagField
 

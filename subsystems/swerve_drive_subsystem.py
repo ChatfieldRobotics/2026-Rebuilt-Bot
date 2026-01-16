@@ -15,6 +15,7 @@ from wpilib import DriverStation
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics, SwerveModuleState
+from commands2.button import CommandXboxController
 
 class SwerveDriveSubsystem(StateSystem):
     front_left = SwerveModuleSubsystem(
@@ -131,35 +132,6 @@ class SwerveDriveSubsystem(StateSystem):
         self.front_right.setDesiredState(desired_states[1])
         self.back_left.setDesiredState(desired_states[2])
         self.back_right.setDesiredState(desired_states[3])
-
-    def drive(self, x_speed: float, y_speed: float, rot: float, field_relative: bool):
-        x_speed_delivered = (
-            x_speed
-            * DriveConstants.max_speed_meters_per_second
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
-        )
-        y_speed_delivered = (
-            y_speed
-            * DriveConstants.max_speed_meters_per_second
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
-        )
-        rot_delivered = (
-            rot
-            * DriveConstants.max_angular_speed
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
-        )
-
-        swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                x_speed_delivered,
-                y_speed_delivered,
-                rot_delivered,
-                self.gyro.getRotation2d(),
-            )
-            if field_relative
-            else ChassisSpeeds(x_speed_delivered, y_speed_delivered, rot_delivered)
-        )
-        self.set_module_states(swerve_module_states)
     
     def drive_robot_relative(self, speeds: ChassisSpeeds, feedforwards: DriveFeedforwards):
         swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(speeds)
@@ -197,6 +169,37 @@ class SwerveDriveSubsystem(StateSystem):
         self.back_left.reset_encoders()
         self.front_right.reset_encoders()
         self.back_right.reset_encoders()
+
+    @state
+    def drive(self, driver_controller: CommandXboxController, field_relative: bool):
+        x_speed_delivered = (
+            driver_controller.getLeftX()
+            * DriveConstants.max_speed_meters_per_second
+            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+        )
+        y_speed_delivered = (
+            driver_controller.getLeftY()
+            * DriveConstants.max_speed_meters_per_second
+            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+        )
+        rot_delivered = (
+            driver_controller.getRightX()
+            * DriveConstants.max_angular_speed
+            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+        )
+
+        swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                x_speed_delivered,
+                y_speed_delivered,
+                rot_delivered,
+                self.gyro.getRotation2d(),
+            )
+            if field_relative
+            else ChassisSpeeds(x_speed_delivered, y_speed_delivered, rot_delivered)
+        )
+        self.set_module_states(swerve_module_states)
+        return False
 
     @state
     def enable_slow_mode(self):
