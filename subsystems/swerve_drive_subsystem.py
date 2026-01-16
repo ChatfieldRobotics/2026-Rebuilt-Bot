@@ -1,8 +1,11 @@
+from ast import Tuple
+from math import cos, pi, sin
 from re import L
 from typing import List
+from numpy import arctan
 import wpilib
 
-from constants import DriveConstants
+from constants import DriveConstants, ShooterConstants, AutoConstants
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants
@@ -16,6 +19,7 @@ from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics, SwerveModuleState
 from commands2.button import CommandXboxController
+
 
 class SwerveDriveSubsystem(StateSystem):
     front_left = SwerveModuleSubsystem(
@@ -52,10 +56,14 @@ class SwerveDriveSubsystem(StateSystem):
             back_left.getPosition(),
             back_right.getPosition(),
         ],
-        Pose2d()
+        Pose2d(),
     )
 
     slow_mode = False
+
+    x_pid_controller = AutoConstants.x_pid_controller
+    y_pid_controller = AutoConstants.y_pid_controller
+    theta_pid_controller = AutoConstants.theta_pid_controller
 
     def __init__(self, vision_subsystem: VisionSubsystem):
         # Initialize the state machine
@@ -108,10 +116,10 @@ class SwerveDriveSubsystem(StateSystem):
 
     def get_pose(self) -> Pose2d:
         return self.odometry.getEstimatedPosition()
-    
+
     def reset_pose(self, new_pose: Pose2d):
         self.odometry.resetPose(new_pose)
-    
+
     def reset_odometry(self, pose: Pose2d):
         self.odometry.resetPosition(
             self.gyro.getRotation2d(),
@@ -132,58 +140,20 @@ class SwerveDriveSubsystem(StateSystem):
         self.front_right.setDesiredState(desired_states[1])
         self.back_left.setDesiredState(desired_states[2])
         self.back_right.setDesiredState(desired_states[3])
-    
-    def drive_robot_relative(self, speeds: ChassisSpeeds, feedforwards: DriveFeedforwards):
-        swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(speeds)
-        self.set_module_states(swerve_module_states)
 
-    def get_robot_relative_speeds(self) -> ChassisSpeeds:
-        module_states = self.get_module_states()
-        robot_relative_speeds = DriveConstants.drive_kinematics.toChassisSpeeds(*module_states)
-        return robot_relative_speeds
-
-    def set_x(self):
-        self.front_left.setDesiredState(
-            SwerveModuleState(0, Rotation2d.fromDegrees(45))
-        )
-        self.front_right.setDesiredState(
-            SwerveModuleState(0, Rotation2d.fromDegrees(-45))
-        )
-        self.back_left.setDesiredState(
-            SwerveModuleState(0, Rotation2d.fromDegrees(-45))
-        )
-        self.back_right.setDesiredState(
-            SwerveModuleState(0, Rotation2d.fromDegrees(45))
-        )
-    
-    def get_module_states(self) -> List[SwerveModuleState]:
-        return [
-            self.front_left.getState(),
-            self.front_right.getState(),
-            self.back_left.getState(),
-            self.back_right.getState(),
-        ]
-
-    def reset_encoders(self):
-        self.front_left.reset_encoders()
-        self.back_left.reset_encoders()
-        self.front_right.reset_encoders()
-        self.back_right.reset_encoders()
-
-    @state
-    def drive(self, driver_controller: CommandXboxController, field_relative: bool):
+    def drive(self, x_speed: float, y_speed: float, rot: float, field_relative: bool):
         x_speed_delivered = (
-            driver_controller.getLeftX()
+            x_speed
             * DriveConstants.max_speed_meters_per_second
             * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
         )
         y_speed_delivered = (
-            driver_controller.getLeftY()
+            y_speed
             * DriveConstants.max_speed_meters_per_second
             * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
         )
         rot_delivered = (
-            driver_controller.getRightX()
+            rot
             * DriveConstants.max_angular_speed
             * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
         )
@@ -199,13 +169,110 @@ class SwerveDriveSubsystem(StateSystem):
             else ChassisSpeeds(x_speed_delivered, y_speed_delivered, rot_delivered)
         )
         self.set_module_states(swerve_module_states)
+
+    def drive_robot_relative(
+        self, speeds: ChassisSpeeds, feedforwards: DriveFeedforwards
+    ):
+        swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
+            speeds
+        )
+        self.set_module_states(swerve_module_states)
+
+    def get_robot_relative_speeds(self) -> ChassisSpeeds:
+        module_states = self.get_module_states()
+        robot_relative_speeds = DriveConstants.drive_kinematics.toChassisSpeeds(
+            *module_states
+        )
+        return robot_relative_speeds
+
+    def set_x(self):
+        self.front_left.setDesiredState(
+            SwerveModuleState(0, Rotation2d.fromDegrees(45))
+        )
+        self.front_right.setDesiredState(
+            SwerveModuleState(0, Rotation2d.fromDegrees(-45))
+        )
+        self.back_left.setDesiredState(
+            SwerveModuleState(0, Rotation2d.fromDegrees(-45))
+        )
+        self.back_right.setDesiredState(
+            SwerveModuleState(0, Rotation2d.fromDegrees(45))
+        )
+
+    def get_module_states(self) -> List[SwerveModuleState]:
+        return [
+            self.front_left.getState(),
+            self.front_right.getState(),
+            self.back_left.getState(),
+            self.back_right.getState(),
+        ]
+
+    def reset_encoders(self):
+        self.front_left.reset_encoders()
+        self.back_left.reset_encoders()
+        self.front_right.reset_encoders()
+        self.back_right.reset_encoders()
+
+    def get_parametric_position(self) -> List[float, float, float]:
+        return (
+            182.11
+            + ShooterConstants.optimal_shooter_distance
+            * cos(5 * pi / 6 * self.t + 7 * pi / 12),
+            317.69 / 2
+            + ShooterConstants.optimal_shooter_distance
+            * sin(5 * pi / 6 * self.t + 7 * pi / 12),
+            5 * pi / 6 * self.t + 7 * pi / 12,
+        )
+
+    @state
+    def default_drive(
+        self, driver_controller: CommandXboxController, field_relative: bool
+    ):
+        self.drive(
+            driver_controller.getLeftX(),
+            driver_controller.getLeftY(),
+            driver_controller.getRightX(),
+        )
         return False
+
+    @state
+    def orbit_hub(self):
+        alliance = DriverStation.getAlliance()
+
+        if alliance == None:
+            return True
+
+        target_position = self.get_parametric_position()
+
+        if alliance == DriverStation.Alliance.kBlue:
+            target_position[0] = 651.22 - target_position[0]
+            target_position[2] = pi - target_position[2]
+
+        target_position[0] *= 0.0254
+        target_position[1] *= 0.0254
+
+        self.x_pid_controller.setGoal(target_position[0])
+        self.y_pid_controller.setGoal(target_position[1])
+        self.theta_pid_controller.setGoal(target_position[2])
+
+        x_pid_output = self.x_pid_controller.calculate(
+            self.get_pose().X(), target_position[0]
+        )
+        y_pid_output = self.y_pid_controller.calculate(
+            self.get_pose().Y(), target_position[1]
+        )
+        theta_pid_output = self.theta_pid_controller.calculate(
+            self.get_pose().rotation().radians(), target_position[2]
+        )
+
+        self.drive(x_pid_output, y_pid_output, theta_pid_output, True)
+        
 
     @state
     def enable_slow_mode(self):
         self.slow_mode = True
         return True
-    
+
     @state
     def disable_slow_mode(self):
         self.slow_mode = False
@@ -216,12 +283,15 @@ class SwerveDriveSubsystem(StateSystem):
         self.gyro.reset()
         return True
 
-    @state 
+    @state
     def smart_zero_heading(self):
         alliance = DriverStation.getAlliance()
 
         if alliance != None:
-            self.gyro.set_yaw(self.get_pose().rotation().degrees() + 180.0 * (alliance == DriverStation.Alliance.kRed))
+            self.gyro.set_yaw(
+                self.get_pose().rotation().degrees()
+                + 180.0 * (alliance == DriverStation.Alliance.kRed)
+            )
         else:
             wpilib.reportError("Couldn't get alliance!")
 

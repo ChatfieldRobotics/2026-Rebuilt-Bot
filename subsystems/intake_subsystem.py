@@ -4,6 +4,7 @@ from phoenix6.signals import NeutralModeValue
 from constants import CANConstants
 from simple_state_system import *
 
+
 class IntakeSubsystem(StateSystem):
     intake_motor = TalonFX(CANConstants.intake_motor)
 
@@ -15,10 +16,10 @@ class IntakeSubsystem(StateSystem):
         intake_slot0 = intake_motor_config.slot0
 
         intake_slot0.k_p = 0.1
-        intake_slot0.k_i = 0.0 
+        intake_slot0.k_i = 0.0
         intake_slot0.k_d = 0.0
 
-        self.intake_motor.setNeutralMode(NeutralModeValue.COAST)  
+        self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
 
         self.intake_motor.configurator.apply(self.intake_motor_config)
 

@@ -5,6 +5,7 @@ import wpilib
 import time
 import threading
 
+
 def state(func):
     func._is_state = True
     return func
@@ -35,6 +36,7 @@ class StateSystem:
 
             subclass_func = self.__class__.__dict__.get(name)
             if subclass_func is not None and subclass_func is not base_func:
+
                 def make_wrapper(fname, base_f, subclass_f):
                     def wrapper(this, *args, **kwargs):
                         flag_name = f"_super_called_flag_{fname}"
@@ -50,9 +52,7 @@ class StateSystem:
                             wpilib.reportWarning(
                                 f"{type(this).__name__}.{fname}() overrides base but never calls super().{fname}()"
                             )
-                            StateSystem._override_warning_shown.add(
-                                (type(this), fname)
-                            )
+                            StateSystem._override_warning_shown.add((type(this), fname))
 
                         return result
 
@@ -91,7 +91,9 @@ class StateSystem:
                         queue.pop(0)
                         self._current_state = queue[0] if queue else None
             except Exception as e:
-                wpilib.reportError(f"Error in state '{name}' of {type(self).__name__}: {e}")
+                wpilib.reportError(
+                    f"Error in state '{name}' of {type(self).__name__}: {e}"
+                )
 
     def queue_states(self, *states):
         with self._current_state_lock:
@@ -113,14 +115,16 @@ class StateSystem:
                     continue
 
                 if name not in self._states:
-                    wpilib.reportError(f"Unknown state '{name}' for {type(self).__name__}")
+                    wpilib.reportError(
+                        f"Unknown state '{name}' for {type(self).__name__}"
+                    )
                     continue
 
                 self._queue.append((name, args, kwargs))
 
             if not self._current_state and self._queue:
                 self._current_state = self._queue[0]
-    
+
     def queue_state(self, state, position=-1):
         with self._current_state_lock:
             if isinstance(state, str):

@@ -1,3 +1,5 @@
+from wpimath.controller import ProfiledPIDController
+from wpimath.trajectory import TrapezoidProfile
 from wpimath.geometry import Transform3d, Translation2d, Translation3d, Rotation3d
 from wpimath.units import inchesToMeters
 from wpimath.kinematics import SwerveDrive4Kinematics
@@ -5,11 +7,18 @@ from pathplannerlib.path import PathConstraints
 
 from math import pi
 
-class CANConstants: 
+
+class CANConstants:
     intake_motor: int = 6
+
+
+class ShooterConstants:
+    optimal_shooter_distance: float = 60
+
 
 class NeoMotorConstants:
     free_speed_rpm = 5676
+
 
 class DriveConstants:
     max_speed_meters_per_second = 4.8
@@ -44,6 +53,7 @@ class DriveConstants:
 
     gyro_reversed = False
 
+
 class ModuleConstants:
     driving_motor_pinion_teeth = 13
 
@@ -58,8 +68,38 @@ class ModuleConstants:
         / driving_motor_reduction
     )
 
+
 class OIConstants:
     driver_controller_port = 0
     copilot_controller_port = 1
 
     drive_deadband = 0.05
+
+
+class AutoConstants:
+    x_pid_controller = ProfiledPIDController(
+        2.25,
+        0.85,
+        0.31,
+        TrapezoidProfile.Constraints(
+            DriveConstants.max_speed_meters_per_second,
+            1.5 * DriveConstants.max_speed_meters_per_second,
+        ),
+    )
+    y_pid_controller = ProfiledPIDController(
+        2.25,
+        0.85,
+        0.31,
+        TrapezoidProfile.Constraints(
+            DriveConstants.max_speed_meters_per_second,
+            1.5 * DriveConstants.max_speed_meters_per_second,
+        ),
+    )
+    theta_pid_controller = ProfiledPIDController(
+        3.70,
+        1.60,
+        0.60,
+        TrapezoidProfile.Constraints(
+            DriveConstants.max_angular_speed, 1.5 * DriveConstants.max_angular_speed
+        ),
+    )
