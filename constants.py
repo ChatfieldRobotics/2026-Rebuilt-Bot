@@ -9,11 +9,21 @@ from math import pi
 
 
 class CANConstants:
-    intake_motor: int = 6
+    intake_motor: int = 5
+    hopper_motor: int = 6
+    advancement_motor: int = 7
+    upper_roller_motor: int = 8
+    lower_roller_motor: int = 9
 
 
 class ShooterConstants:
     optimal_shooter_distance: float = 60
+    optimal_upper_roller_rps: float = 32
+    optimal_lower_roller_rps: float = -32
+
+    advancement_motor_percentage: float = 0.5
+
+    minimum_acceptable_closed_loop_error: float = 0.5
 
 
 class NeoMotorConstants:

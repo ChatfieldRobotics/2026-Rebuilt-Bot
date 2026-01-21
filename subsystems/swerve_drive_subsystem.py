@@ -65,6 +65,11 @@ class SwerveDriveSubsystem(StateSystem):
     y_pid_controller = AutoConstants.y_pid_controller
     theta_pid_controller = AutoConstants.theta_pid_controller
 
+    # The parametric value used for orbiting the hub
+    t: float = 0
+
+    orbiting = False
+
     def __init__(self, vision_subsystem: VisionSubsystem):
         # Initialize the state machine
         super().__init__()
@@ -232,11 +237,19 @@ class SwerveDriveSubsystem(StateSystem):
             driver_controller.getLeftX(),
             driver_controller.getLeftY(),
             driver_controller.getRightX(),
+            field_relative,
         )
         return False
 
     @state
-    def orbit_hub(self):
+    def pre_orbit(self):
+        # NEED TO IMPLEMENT T CALCULATION
+        self.orbiting = True
+
+    @state
+    def orbit_hub(self, driver_controller: CommandXboxController):
+        self.t = min(max(self.t + driver_controller.getLeftX(), 0.0), 1.0)
+
         alliance = DriverStation.getAlliance()
 
         if alliance == None:
@@ -266,7 +279,11 @@ class SwerveDriveSubsystem(StateSystem):
         )
 
         self.drive(x_pid_output, y_pid_output, theta_pid_output, True)
-        
+        return not self.orbiting
+
+    @state
+    def stop_orbiting(self):
+        self.orbiting = False
 
     @state
     def enable_slow_mode(self):
