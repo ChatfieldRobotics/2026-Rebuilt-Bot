@@ -21,7 +21,7 @@ class ShooterConstants:
     optimal_upper_roller_rps: float = 32
     optimal_lower_roller_rps: float = -32
 
-    advancement_motor_percentage: float = 0.5
+    advancement_motor_rps: float = 10
 
     minimum_acceptable_closed_loop_error: float = 0.5
 
