@@ -68,7 +68,11 @@ class ShooterSubsytem(StateSystem):
 
     @state
     def advance_balls(self):
-        self.advancement_motor.set(ShooterConstants.advancement_motor_percentage)
+        self.advancement_motor.set_control(
+            self.motion_magic_velocity_voltage.with_velocity(
+                ShooterConstants.advancement_motor_rps
+            )
+        )
         return True
 
     @state
