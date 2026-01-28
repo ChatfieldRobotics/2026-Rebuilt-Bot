@@ -4,6 +4,7 @@ from subsystems.swerve_drive_subsystem import SwerveDriveSubsystem
 from subsystems.vision_subsystem import VisionSubsystem
 from subsystems.hopper_subsystem import HopperSubsystem
 from subsystems.shooter_subsystem import ShooterSubsytem
+from wpilib.interfaces import GenericHID
 
 
 class RobotContainer:
@@ -18,6 +19,9 @@ class RobotContainer:
 
     def __init__(self):
         self.set_controller_bindings()
+
+    def active_rumble(self):
+        self.driver_controller.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0)
 
     def start_intake(self):
         self.intake_subsystem.queue_state(("run_intake", {"speed": 0.6}))
