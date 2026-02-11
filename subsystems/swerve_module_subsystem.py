@@ -6,7 +6,7 @@ from rev import (
     SparkLowLevel,
     SparkBase,
     ResetMode,
-    PersistMode,
+    PersistMode
 )
 
 from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
@@ -46,7 +46,7 @@ class SwerveModuleSubsystem:
 
         self.chassis_angular_offset = chassis_angular_offset
         self.desired_state = SwerveModuleState(
-            0.0, Rotation2d(self.turning_encoder.getPosition)
+            0.0, Rotation2d(self.turning_encoder.getPosition())
         )
 
         self.driving_encoder.setPosition(0.0)

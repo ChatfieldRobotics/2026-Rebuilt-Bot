@@ -85,6 +85,11 @@ class OIConstants:
 
     drive_deadband = 0.05
 
+class VisionConstants:
+    robot_to_camera = Transform3d(
+        Translation3d(inchesToMeters(8.0), 0, inchesToMeters(6.0)),
+        Rotation3d(0, 0, 0),
+    )
 
 class AutoConstants:
     x_pid_controller = ProfiledPIDController(

@@ -21,7 +21,7 @@ class IntakeSubsystem(StateSystem):
 
         self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
 
-        self.intake_motor.configurator.apply(self.intake_motor_config)
+        self.intake_motor.configurator.apply(intake_motor_config)
 
     def periodic(self):
         # Run internal periodic functions

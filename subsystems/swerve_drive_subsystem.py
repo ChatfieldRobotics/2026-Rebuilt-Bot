@@ -1,6 +1,4 @@
-from ast import Tuple
 from math import cos, pi, sin
-from re import L
 from typing import List
 from numpy import arctan
 import wpilib
@@ -218,8 +216,8 @@ class SwerveDriveSubsystem(StateSystem):
         self.front_right.reset_encoders()
         self.back_right.reset_encoders()
 
-    def get_parametric_position(self) -> List[float, float, float]:
-        return (
+    def get_parametric_position(self) -> List[float]:
+        return [
             182.11
             + ShooterConstants.optimal_shooter_distance
             * cos(5 * pi / 6 * self.t + 7 * pi / 12),
@@ -227,12 +225,15 @@ class SwerveDriveSubsystem(StateSystem):
             + ShooterConstants.optimal_shooter_distance
             * sin(5 * pi / 6 * self.t + 7 * pi / 12),
             5 * pi / 6 * self.t + 7 * pi / 12,
-        )
+        ]
 
     @state
     def default_drive(
         self, driver_controller: CommandXboxController, field_relative: bool
     ):
+        if DriverStation.isDisabled():
+            return False
+
         self.drive(
             driver_controller.getLeftX(),
             driver_controller.getLeftY(),
@@ -245,6 +246,7 @@ class SwerveDriveSubsystem(StateSystem):
     def pre_orbit(self):
         # NEED TO IMPLEMENT T CALCULATION
         self.orbiting = True
+        return True
 
     @state
     def orbit_hub(self, driver_controller: CommandXboxController):
@@ -284,6 +286,7 @@ class SwerveDriveSubsystem(StateSystem):
     @state
     def stop_orbiting(self):
         self.orbiting = False
+        return True
 
     @state
     def enable_slow_mode(self):

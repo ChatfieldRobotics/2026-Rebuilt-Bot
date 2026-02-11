@@ -1,4 +1,4 @@
-from rev import SparkBaseConfig, SparkMaxConfig, ClosedLoopConfig
+from rev import SparkBaseConfig, SparkMaxConfig, ClosedLoopConfig, FeedbackSensor
 
 from constants import ModuleConstants
 
@@ -8,7 +8,7 @@ neo_config = SparkMaxConfig()
 
 neo_config.setIdleMode(SparkBaseConfig.IdleMode.kCoast).smartCurrentLimit(10)
 neo_config.closedLoop.setFeedbackSensor(
-    ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder
+    FeedbackSensor.kPrimaryEncoder
 ).pid(0.0, 0.0, 0.0).velocityFF(0.00045).outputRange(-1, 1)
 neo_config.closedLoop.maxMotion.maxVelocity(700).maxAcceleration(
     1800
@@ -28,7 +28,7 @@ driving_config.encoder.positionConversionFactor(
     driving_factor
 ).velocityConversionFactor(driving_factor / 60.0)
 driving_config.closedLoop.setFeedbackSensor(
-    ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder
+    FeedbackSensor.kPrimaryEncoder
 ).pid(0.04, 0.0, 0.0).velocityFF(driving_velocity_feed_forward).outputRange(-1.0, 1.0)
 driving_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
     20
@@ -39,7 +39,7 @@ turning_config.absoluteEncoder.inverted(True).positionConversionFactor(
     turning_factor
 ).velocityConversionFactor(turning_factor / 60.0)
 turning_config.closedLoop.setFeedbackSensor(
-    ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder
+    FeedbackSensor.kAbsoluteEncoder
 ).pid(1.0, 0.0, 0.0).outputRange(-1.0, 1.0).positionWrappingEnabled(
     True
 ).positionWrappingInputRange(

@@ -1,5 +1,5 @@
 from typing import List
-from constants import VisionConstants
+from constants import AutoConstants, VisionConstants
 
 from simple_state_system import *
 
@@ -9,7 +9,7 @@ from wpimath.geometry import Pose2d, Pose3d
 
 from photonlibpy import PhotonCamera, PhotonPoseEstimator, EstimatedRobotPose
 
-from photonlibpy.photonPoseEstimator import PoseStrategy
+from photonlibpy.photonPoseEstimator import PhotonPoseEstimator
 from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
 
 
@@ -36,13 +36,11 @@ class VisionSubsystem(StateSystem):
 
         self.pose_estimator = PhotonPoseEstimator(
             self.april_tag_field_layout,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            self.photon_camera,
             VisionConstants.robot_to_camera,
         )
 
         self.robot_pose = EstimatedRobotPose(
-            Pose3d(), 0, [], PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
+            Pose3d(), 0, [],
         )
 
     def periodic(self) -> None:

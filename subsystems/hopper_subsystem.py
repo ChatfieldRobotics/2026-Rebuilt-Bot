@@ -12,16 +12,16 @@ class HopperSubsystem(StateSystem):
         # Initialize the state machine
         super().__init__()
 
-        intake_motor_config = TalonFXConfiguration()
-        intake_slot0 = intake_motor_config.slot0
+        hopper_motor_config = TalonFXConfiguration()
+        hopper_slot0 = hopper_motor_config.slot0
 
-        intake_slot0.k_p = 0.1
-        intake_slot0.k_i = 0.0
-        intake_slot0.k_d = 0.0
+        hopper_slot0.k_p = 0.1
+        hopper_slot0.k_i = 0.0
+        hopper_slot0.k_d = 0.0
 
-        self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
+        self.hopper_motor.setNeutralMode(NeutralModeValue.COAST)
 
-        self.intake_motor.configurator.apply(self.intake_motor_config)
+        self.hopper_motor.configurator.apply(hopper_motor_config)
 
     def periodic(self):
         # Run internal periodic functions
@@ -29,5 +29,5 @@ class HopperSubsystem(StateSystem):
 
     @state
     def run_hopper(self, speed: float):
-        self.intake_motor.set(speed)
+        self.hopper_motor.set(speed)
         return True
