@@ -3,17 +3,16 @@ from wpimath.trajectory import TrapezoidProfile
 from wpimath.geometry import Transform3d, Translation2d, Translation3d, Rotation3d
 from wpimath.units import inchesToMeters
 from wpimath.kinematics import SwerveDrive4Kinematics
-from pathplannerlib.path import PathConstraints
 
 from math import pi
 
 
 class CANConstants:
-    intake_motor: int = 5
+    intake_motor: int = 7
     hopper_motor: int = 6
-    advancement_motor: int = 7
-    upper_roller_motor: int = 8
-    lower_roller_motor: int = 9
+    advancement_motor: int = 5
+    upper_roller_motor: int = 3
+    lower_roller_motor: int = 4
 
 
 class ShooterConstants:
@@ -31,8 +30,8 @@ class NeoMotorConstants:
 
 
 class DriveConstants:
-    max_speed_meters_per_second = 4.8
-    max_angular_speed = 2 * pi
+    max_speed_meters_per_second = 15
+    max_angular_speed = 5 * pi
     slow_mode_speed_percentage = 0.3
 
     track_width = 0.622
@@ -61,7 +60,7 @@ class DriveConstants:
     back_left_turning_id = 5
     back_right_turning_id = 7
 
-    gyro_reversed = False
+    gyro_reversed = True
 
 
 class ModuleConstants:
@@ -85,11 +84,13 @@ class OIConstants:
 
     drive_deadband = 0.05
 
+
 class VisionConstants:
     robot_to_camera = Transform3d(
         Translation3d(inchesToMeters(8.0), 0, inchesToMeters(6.0)),
         Rotation3d(0, 0, 0),
     )
+
 
 class AutoConstants:
     x_pid_controller = ProfiledPIDController(

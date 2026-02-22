@@ -11,7 +11,9 @@ class ShooterSubsytem(StateSystem):
     lower_roller_motor = TalonFX(CANConstants.lower_roller_motor)
     advancement_motor = TalonFX(CANConstants.advancement_motor)
 
-    motion_magic_velocity_voltage: MotionMagicVelocityVoltage = MotionMagicVelocityVoltage(0, 0)
+    motion_magic_velocity_voltage: MotionMagicVelocityVoltage = (
+        MotionMagicVelocityVoltage(0, 0)
+    )
 
     def __init__(self):
         # Initialize the state machine

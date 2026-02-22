@@ -149,16 +149,19 @@ class SwerveDriveSubsystem(StateSystem):
             x_speed
             * DriveConstants.max_speed_meters_per_second
             * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
         )
         y_speed_delivered = (
             y_speed
             * DriveConstants.max_speed_meters_per_second
             * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
         )
         rot_delivered = (
             rot
             * DriveConstants.max_angular_speed
             * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
         )
 
         swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
@@ -235,8 +238,8 @@ class SwerveDriveSubsystem(StateSystem):
             return False
 
         self.drive(
-            driver_controller.getLeftX(),
             driver_controller.getLeftY(),
+            driver_controller.getLeftX(),
             driver_controller.getRightX(),
             field_relative,
         )

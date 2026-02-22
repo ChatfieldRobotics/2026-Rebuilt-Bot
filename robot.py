@@ -11,11 +11,19 @@ class Robot(wpilib.TimedRobot):
     def robotPeriodic(self):
         data = wpilib.DriverStation.getGameSpecificMessage()
         if data:
-            if data == "R" and (DriverStation.getAlliance() | DriverStation.Alliance.kBlue) == DriverStation.Alliance.kRed:
+            if (
+                data == "R"
+                and (DriverStation.getAlliance() | DriverStation.Alliance.kBlue)
+                == DriverStation.Alliance.kRed
+            ):
                 self.robot_container.active_rumble()
-            elif data =="B" and (DriverStation.getAlliance() | DriverStation.Alliance.kRed) == DriverStation.Alliance.kBlue:
+            elif (
+                data == "B"
+                and (DriverStation.getAlliance() | DriverStation.Alliance.kRed)
+                == DriverStation.Alliance.kBlue
+            ):
                 self.robot_container.active_rumble()
-        
+
         CommandScheduler.getInstance().run()
 
 

@@ -40,7 +40,9 @@ class VisionSubsystem(StateSystem):
         )
 
         self.robot_pose = EstimatedRobotPose(
-            Pose3d(), 0, [],
+            Pose3d(),
+            0,
+            [],
         )
 
     def periodic(self) -> None:

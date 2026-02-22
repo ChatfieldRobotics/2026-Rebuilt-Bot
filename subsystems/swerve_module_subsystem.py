@@ -6,7 +6,7 @@ from rev import (
     SparkLowLevel,
     SparkBase,
     ResetMode,
-    PersistMode
+    PersistMode,
 )
 
 from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
