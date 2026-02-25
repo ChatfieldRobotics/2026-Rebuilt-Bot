@@ -72,8 +72,7 @@ class StateSystem:
 
     def _run(self):
         while True:
-            if self._current_state:
-                self.periodic()
+            self.periodic()
             time.sleep(0.02)
 
     def periodic(self):
