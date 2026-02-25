@@ -78,7 +78,7 @@ class SwerveModuleSubsystem:
 
         self.driving_closed_loop_controller.setReference(
             corrected_desired_state.speed,
-            SparkBase.ControlType.kMAXMotionVelocityControl,
+            SparkBase.ControlType.kVelocity,
         )
         self.turning_closed_loop_controller.setReference(
             corrected_desired_state.angle.radians(), SparkBase.ControlType.kPosition

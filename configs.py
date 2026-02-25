@@ -30,9 +30,9 @@ driving_config.encoder.positionConversionFactor(
 driving_config.closedLoop.setFeedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(
     0.04, 0.0, 0.0
 ).velocityFF(driving_velocity_feed_forward).outputRange(-1.0, 1.0)
-driving_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
-    20
-).allowedClosedLoopError(0.01)
+# driving_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
+#     20
+# ).allowedClosedLoopError(0.01)
 
 turning_config.setIdleMode(SparkMaxConfig.IdleMode.kBrake).smartCurrentLimit(20)
 turning_config.absoluteEncoder.inverted(True).positionConversionFactor(
@@ -43,6 +43,6 @@ turning_config.closedLoop.setFeedbackSensor(FeedbackSensor.kAbsoluteEncoder).pid
 ).outputRange(-1.0, 1.0).positionWrappingEnabled(True).positionWrappingInputRange(
     0, turning_factor
 )
-turning_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
-    20
-).allowedClosedLoopError(0.01)
+# turning_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
+#     20
+# ).allowedClosedLoopError(0.01)

@@ -49,6 +49,8 @@ class VisionSubsystem(StateSystem):
         # Run internal periodic functions
         super().periodic()
 
+        print("Hello, world!")
+
         camera_results: List[PhotonPipelineResult] = (
             self.photon_camera.getAllUnreadResults()
         )

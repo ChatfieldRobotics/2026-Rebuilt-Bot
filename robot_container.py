@@ -13,7 +13,7 @@ from wpilib.interfaces import GenericHID
 class RobotContainer:
     vision_subsystem = VisionSubsystem("USB_GS_Camera")
 
-    robot_drive: SwerveDriveSubsystem = SwerveDriveSubsystem(vision_subsystem)
+    robot_drive = SwerveDriveSubsystem(vision_subsystem)
     # intake_subsystem: IntakeSubsystem = IntakeSubsystem()
     # hopper_subsystem: HopperSubsystem = HopperSubsystem()
     # shooter_subsystem: ShooterSubsytem = ShooterSubsytem()
