@@ -238,9 +238,9 @@ class SwerveDriveSubsystem(StateSystem):
             return False
 
         self.drive(
-            driver_controller.getLeftY(),
-            driver_controller.getLeftX(),
-            driver_controller.getRightX(),
+            -driver_controller.getLeftY(),
+            -driver_controller.getLeftX(),
+            -driver_controller.getRightX(),
             field_relative,
         )
         return False

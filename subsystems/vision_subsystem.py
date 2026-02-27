@@ -14,13 +14,6 @@ from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
 
 
 class VisionSubsystem(StateSystem):
-    photon_camera: PhotonCamera
-    pose_estimator: PhotonPoseEstimator
-    robot_pose: EstimatedRobotPose | None
-
-    april_tag_field_layout: AprilTagFieldLayout
-    best_april_tag_pose: Pose2d
-
     def __init__(self, camera_name: str) -> None:
         # Initialize the state machine
         super().__init__()
@@ -39,23 +32,25 @@ class VisionSubsystem(StateSystem):
             VisionConstants.robot_to_camera,
         )
 
-        self.robot_pose = EstimatedRobotPose(
+        self.robot_pose: EstimatedRobotPose = EstimatedRobotPose(
             Pose3d(),
             0,
             [],
         )
 
-    def periodic(self) -> None:
+    def periodic(self):
         # Run internal periodic functions
         super().periodic()
 
-        print("Hello, world!")
+        if not hasattr(self, "photon_camera"):
+            return
 
         camera_results: List[PhotonPipelineResult] = (
             self.photon_camera.getAllUnreadResults()
         )
 
         if len(camera_results) == 0:
+            self.robot_pose = None
             return
 
         for result in camera_results:
@@ -69,4 +64,7 @@ class VisionSubsystem(StateSystem):
             if not potential_tag_pose == None:
                 self.best_april_tag_pose = potential_tag_pose.toPose2d()
 
-            self.robot_pose = self.pose_estimator.update(result)
+            self.robot_pose = self.pose_estimator.estimateCoprocMultiTagPose(result)
+
+            if self.robot_pose is None:
+                self.robot_pose = self.pose_estimator.estimateLowestAmbiguityPose(result)

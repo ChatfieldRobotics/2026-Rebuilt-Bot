@@ -2,6 +2,7 @@ from commands2 import InstantCommand
 from commands2.button import CommandXboxController
 
 # from subsystems.intake_subsystem import IntakeSubsystem
+from subsystems.hopper_subsystem import HopperSubsystem
 from subsystems.swerve_drive_subsystem import SwerveDriveSubsystem
 from subsystems.vision_subsystem import VisionSubsystem
 
@@ -11,9 +12,6 @@ from wpilib.interfaces import GenericHID
 
 
 class RobotContainer:
-    vision_subsystem = VisionSubsystem("USB_GS_Camera")
-
-    robot_drive = SwerveDriveSubsystem(vision_subsystem)
     # intake_subsystem: IntakeSubsystem = IntakeSubsystem()
     # hopper_subsystem: HopperSubsystem = HopperSubsystem()
     # shooter_subsystem: ShooterSubsytem = ShooterSubsytem()
@@ -21,6 +19,10 @@ class RobotContainer:
     driver_controller = CommandXboxController(0)
 
     def __init__(self):
+        self.vision_subsystem = VisionSubsystem("APTCam")
+        self.robot_drive = SwerveDriveSubsystem(self.vision_subsystem)
+        self.hopper_subsystem = HopperSubsystem()
+
         self.set_controller_bindings()
 
     def active_rumble(self):
@@ -56,6 +58,10 @@ class RobotContainer:
 
         self.driver_controller.leftBumper().onTrue(
             InstantCommand(lambda: self.robot_drive.queue_state("zero_heading", 0))
+        )
+
+        self.driver_controller.a().onTrue(
+            InstantCommand(lambda: self.hopper_subsystem.extend_hopper())
         )
 
         # self.driver_controller.a().onTrue(self.start_intake)

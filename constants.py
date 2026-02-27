@@ -9,7 +9,8 @@ from math import pi
 
 class CANConstants:
     intake_motor: int = 7
-    hopper_motor: int = 6
+    right_intake: int = 1
+    left_intake: int = 2
     advancement_motor: int = 5
     upper_roller_motor: int = 3
     lower_roller_motor: int = 4
@@ -60,7 +61,7 @@ class DriveConstants:
     back_left_turning_id = 5
     back_right_turning_id = 7
 
-    gyro_reversed = True
+    gyro_reversed = False
 
 
 class ModuleConstants:
@@ -87,8 +88,8 @@ class OIConstants:
 
 class VisionConstants:
     robot_to_camera = Transform3d(
-        Translation3d(inchesToMeters(8.0), 0, inchesToMeters(6.0)),
-        Rotation3d(0, 0, 0),
+        Translation3d(inchesToMeters(-12.5), 0, inchesToMeters(15.0)),
+        Rotation3d(pi/6, pi, 0),
     )
 
 
