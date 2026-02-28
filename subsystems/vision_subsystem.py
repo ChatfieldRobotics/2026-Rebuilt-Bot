@@ -67,4 +67,6 @@ class VisionSubsystem(StateSystem):
             self.robot_pose = self.pose_estimator.estimateCoprocMultiTagPose(result)
 
             if self.robot_pose is None:
-                self.robot_pose = self.pose_estimator.estimateLowestAmbiguityPose(result)
+                self.robot_pose = self.pose_estimator.estimateLowestAmbiguityPose(
+                    result
+                )

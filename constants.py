@@ -11,9 +11,10 @@ class CANConstants:
     intake_motor: int = 7
     right_intake: int = 1
     left_intake: int = 2
-    advancement_motor: int = 5
+    conveyor_motor: int = 5
     upper_roller_motor: int = 3
     lower_roller_motor: int = 4
+    trigger_motor: int = 6
 
 
 class ShooterConstants:
@@ -89,7 +90,7 @@ class OIConstants:
 class VisionConstants:
     robot_to_camera = Transform3d(
         Translation3d(inchesToMeters(-12.5), 0, inchesToMeters(15.0)),
-        Rotation3d(pi/6, pi, 0),
+        Rotation3d(pi / 6, pi, 0),
     )
 
 

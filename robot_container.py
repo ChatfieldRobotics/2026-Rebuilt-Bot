@@ -1,8 +1,9 @@
-from commands2 import InstantCommand
+from commands2 import InstantCommand, ProxyCommand
 from commands2.button import CommandXboxController
 
 # from subsystems.intake_subsystem import IntakeSubsystem
 from subsystems.hopper_subsystem import HopperSubsystem
+from subsystems.shooter_subsystem import ShooterSubsytem
 from subsystems.swerve_drive_subsystem import SwerveDriveSubsystem
 from subsystems.vision_subsystem import VisionSubsystem
 
@@ -12,16 +13,13 @@ from wpilib.interfaces import GenericHID
 
 
 class RobotContainer:
-    # intake_subsystem: IntakeSubsystem = IntakeSubsystem()
-    # hopper_subsystem: HopperSubsystem = HopperSubsystem()
-    # shooter_subsystem: ShooterSubsytem = ShooterSubsytem()
-
     driver_controller = CommandXboxController(0)
 
     def __init__(self):
         self.vision_subsystem = VisionSubsystem("APTCam")
         self.robot_drive = SwerveDriveSubsystem(self.vision_subsystem)
         self.hopper_subsystem = HopperSubsystem()
+        self.shooter_subsystem = ShooterSubsytem()
 
         self.set_controller_bindings()
 
@@ -60,8 +58,20 @@ class RobotContainer:
             InstantCommand(lambda: self.robot_drive.queue_state("zero_heading", 0))
         )
 
-        self.driver_controller.a().onTrue(
-            InstantCommand(lambda: self.hopper_subsystem.extend_hopper())
+        self.driver_controller.povRight().onTrue(
+            InstantCommand(lambda: self.hopper_subsystem.queue_states(
+                "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
+            ))
+        )
+        
+        self.driver_controller.rightTrigger().onTrue(
+            InstantCommand(lambda: self.shooter_subsystem.queue_states(
+                "init_shooter", "ensure_velocity", "advance_balls"
+            ))
+        )
+
+        self.driver_controller.rightTrigger().onFalse(
+            InstantCommand(lambda: self.shooter_subsystem.queue_state("disable_shooter", 0))
         )
 
         # self.driver_controller.a().onTrue(self.start_intake)

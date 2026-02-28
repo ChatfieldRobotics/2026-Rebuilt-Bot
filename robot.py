@@ -20,14 +20,12 @@ class Robot(wpilib.TimedRobot):
         if data:
             if (
                 data == "R"
-                and DriverStation.getAlliance()
-                == DriverStation.Alliance.kRed
+                and DriverStation.getAlliance() == DriverStation.Alliance.kRed
             ):
                 self.robot_container.active_rumble()
             elif (
                 data == "B"
-                and DriverStation.getAlliance()
-                == DriverStation.Alliance.kBlue
+                and DriverStation.getAlliance() == DriverStation.Alliance.kBlue
             ):
                 self.robot_container.active_rumble()
 
