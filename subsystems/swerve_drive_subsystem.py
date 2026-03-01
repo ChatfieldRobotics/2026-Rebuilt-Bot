@@ -17,9 +17,10 @@ from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics, SwerveModuleState
 from commands2.button import CommandXboxController
+from commands2.subsystem import Subsystem
 
 
-class SwerveDriveSubsystem(StateSystem):
+class SwerveDriveSubsystem(Subsystem):
     front_left = SwerveModuleSubsystem(
         DriveConstants.front_left_driving_id,
         DriveConstants.front_left_turning_id,
@@ -70,7 +71,7 @@ class SwerveDriveSubsystem(StateSystem):
 
     def __init__(self, vision_subsystem: VisionSubsystem):
         # Initialize the state machine
-        super().__init__()
+        # super().__init__()
 
         self.vision_subsystem = vision_subsystem
 
@@ -87,10 +88,10 @@ class SwerveDriveSubsystem(StateSystem):
                     speeds, feedforwards
                 ),
                 PPHolonomicDriveController(
-                    PIDConstants(2.25, 0.85, 0.31), PIDConstants(3.7, 1.6, 0.6)
+                    PIDConstants(12.50, 5.6, 1.81), PIDConstants(9.75, 1.6, 0.6)
                 ),
                 robot_config,
-                lambda: (DriverStation.getAlliance() | DriverStation.Alliance.kBlue)
+                lambda: DriverStation.getAlliance()
                 == DriverStation.Alliance.kRed,
                 self,
             )
@@ -99,7 +100,10 @@ class SwerveDriveSubsystem(StateSystem):
 
     def periodic(self):
         # Run internal periodic functions
-        super().periodic()
+        # super().periodic()
+
+        if DriverStation.isEnabled():
+            print(self.get_pose())
 
         self.odometry.update(
             self.gyro.getRotation2d(),
@@ -187,7 +191,7 @@ class SwerveDriveSubsystem(StateSystem):
     def get_robot_relative_speeds(self) -> ChassisSpeeds:
         module_states = self.get_module_states()
         robot_relative_speeds = DriveConstants.drive_kinematics.toChassisSpeeds(
-            *module_states
+            module_states
         )
         return robot_relative_speeds
 
@@ -230,7 +234,6 @@ class SwerveDriveSubsystem(StateSystem):
             5 * pi / 6 * self.t + 7 * pi / 12,
         ]
 
-    @state
     def default_drive(
         self, driver_controller: CommandXboxController, field_relative: bool
     ):
@@ -245,13 +248,11 @@ class SwerveDriveSubsystem(StateSystem):
         )
         return False
 
-    @state
     def pre_orbit(self):
         # NEED TO IMPLEMENT T CALCULATION
         self.orbiting = True
         return True
 
-    @state
     def orbit_hub(self, driver_controller: CommandXboxController):
         self.t = min(max(self.t + driver_controller.getLeftX(), 0.0), 1.0)
 
@@ -286,27 +287,22 @@ class SwerveDriveSubsystem(StateSystem):
         self.drive(x_pid_output, y_pid_output, theta_pid_output, True)
         return not self.orbiting
 
-    @state
     def stop_orbiting(self):
         self.orbiting = False
         return True
 
-    @state
     def enable_slow_mode(self):
         self.slow_mode = True
         return True
 
-    @state
     def disable_slow_mode(self):
         self.slow_mode = False
         return True
 
-    @state
     def zero_heading(self):
         self.gyro.reset()
         return True
 
-    @state
     def smart_zero_heading(self):
         alliance = DriverStation.getAlliance()
 

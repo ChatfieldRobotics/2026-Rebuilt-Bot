@@ -24,7 +24,7 @@ class ShooterConstants:
 
     advancement_motor_rps: float = 10
 
-    minimum_acceptable_closed_loop_error: float = 0.5
+    minimum_acceptable_closed_loop_error: float = 1
 
 
 class NeoMotorConstants:
@@ -36,8 +36,8 @@ class DriveConstants:
     max_angular_speed = 5 * pi
     slow_mode_speed_percentage = 0.3
 
-    track_width = 0.622
-    wheel_base = 0.622
+    track_width = 0.5969
+    wheel_base = 0.5969
     wheel_translations = [
         Translation2d(wheel_base / 2, track_width / 2),
         Translation2d(wheel_base / 2, -track_width / 2),

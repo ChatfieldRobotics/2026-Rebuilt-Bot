@@ -20,6 +20,7 @@ class HopperSubsystem(StateSystem):
         hopper_motor_config = TalonFXSConfiguration()
         hopper_slot0 = hopper_motor_config.slot0
         motion_magic_configs = hopper_motor_config.motion_magic
+        limit_configs = hopper_motor_config.current_limits
 
         hopper_motor_config.commutation.motor_arrangement = (
             MotorArrangementValue.MINION_JST
@@ -32,6 +33,9 @@ class HopperSubsystem(StateSystem):
         motion_magic_configs.motion_magic_cruise_velocity = 1600
         motion_magic_configs.motion_magic_acceleration = 2400
         motion_magic_configs.motion_magic_jerk = 3600
+        
+        limit_configs.stator_current_limit_enable = True
+        limit_configs.stator_current_limit = 15
 
         self.left_intake.setNeutralMode(NeutralModeValue.COAST)
         self.right_intake.setNeutralMode(NeutralModeValue.COAST)
@@ -75,7 +79,7 @@ class HopperSubsystem(StateSystem):
     @state
     def toggle_intake_speed(self):
         if self.hopper_toggle:
-            self.intake_motor.set(-0.8)
+            self.intake_motor.set(-0.9)
         else:
             self.intake_motor.set(0.0)
 

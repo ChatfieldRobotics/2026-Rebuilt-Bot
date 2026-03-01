@@ -5,6 +5,7 @@ from phoenix6.controls import MotionMagicVelocityVoltage
 from wpilib import DriverStation
 from constants import CANConstants, ShooterConstants
 from simple_state_system import *
+from time import sleep
 
 
 class ShooterSubsytem(StateSystem):
@@ -21,7 +22,7 @@ class ShooterSubsytem(StateSystem):
         motion_magic_config = roller_config.motion_magic
         intake_slot0 = roller_config.slot0
 
-        intake_slot0.k_p = 0.65
+        intake_slot0.k_p = 0.475
         intake_slot0.k_i = 0.4
         intake_slot0.k_d = 0.0
 
@@ -38,6 +39,8 @@ class ShooterSubsytem(StateSystem):
         self.lower_roller_motor.configurator.apply(roller_config)
         self.conveyor_motor.configurator.apply(roller_config)
         self.trigger_motor.configurator.apply(roller_config)
+
+        self.start_timer = None
 
     def periodic(self):
         # Run internal periodic functions
@@ -60,21 +63,14 @@ class ShooterSubsytem(StateSystem):
                 ShooterConstants.optimal_lower_roller_rps
             )
         )
-        self.conveyor_motor.set_control(
-            MotionMagicVelocityVoltage(
-                -30
-            )
-        )
-        self.trigger_motor.set_control(
-            MotionMagicVelocityVoltage(
-                20
-            )
-        )
+
+        sleep(0.25)
+
         return True
 
     @state
     def ensure_velocity(self):
-        print(self.upper_roller_motor.get_velocity().value_as_double, self.lower_roller_motor.get_velocity().value_as_double)
+        # print(self.upper_roller_motor.get_velocity().value_as_double, self.lower_roller_motor.get_velocity().value_as_double)
         return (
             abs(self.upper_roller_motor.get_closed_loop_error().value_as_double)
             < ShooterConstants.minimum_acceptable_closed_loop_error
@@ -84,7 +80,12 @@ class ShooterSubsytem(StateSystem):
 
     @state
     def advance_balls(self):
-        self.trigger_motor.set_control(MotionMagicVelocityVoltage(-20))
+        self.trigger_motor.set_control(MotionMagicVelocityVoltage(-90))
+        self.conveyor_motor.set_control(
+            MotionMagicVelocityVoltage(
+                -90
+            )
+        )
         return True
 
     @state

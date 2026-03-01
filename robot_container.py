@@ -1,5 +1,6 @@
-from commands2 import InstantCommand, ProxyCommand
+from commands2 import InstantCommand, ProxyCommand, RunCommand, SequentialCommandGroup
 from commands2.button import CommandXboxController
+from wpilib import SendableChooser, SmartDashboard
 
 # from subsystems.intake_subsystem import IntakeSubsystem
 from subsystems.hopper_subsystem import HopperSubsystem
@@ -11,9 +12,12 @@ from subsystems.vision_subsystem import VisionSubsystem
 # from subsystems.shooter_subsystem import ShooterSubsytem
 from wpilib.interfaces import GenericHID
 
+from pathplannerlib.auto import AutoBuilder, NamedCommands
+
 
 class RobotContainer:
     driver_controller = CommandXboxController(0)
+    sendable_chooser: SendableChooser | None = None
 
     def __init__(self):
         self.vision_subsystem = VisionSubsystem("APTCam")
@@ -22,6 +26,11 @@ class RobotContainer:
         self.shooter_subsystem = ShooterSubsytem()
 
         self.set_controller_bindings()
+        self.configure_named_commands()
+
+        self.sendable_chooser = AutoBuilder.buildAutoChooser()
+
+        SmartDashboard.putData(self.sendable_chooser)
 
     def active_rumble(self):
         self.driver_controller.getHID().setRumble(
@@ -46,16 +55,23 @@ class RobotContainer:
     #     self.shooter_subsystem.clear_queue()
     #     self.shooter_subsystem.queue_state("disable_shooter")
 
+    def configure_named_commands(self):
+        NamedCommands.registerCommand("toggle_intake", 
+            InstantCommand(lambda: self.hopper_subsystem.queue_states(
+                "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
+        )))
+        NamedCommands.registerCommand("shoot", 
+            InstantCommand(lambda: self.shooter_subsystem.queue_states(
+                "init_shooter", "ensure_velocity", "advance_balls"
+        )))
+
     def set_controller_bindings(self):
-        self.robot_drive.queue_state(
-            (
-                "default_drive",
-                {"driver_controller": self.driver_controller, "field_relative": True},
-            )
+        self.robot_drive.setDefaultCommand(
+            RunCommand(lambda: self.robot_drive.default_drive(self.driver_controller, True), self.robot_drive)
         )
 
         self.driver_controller.leftBumper().onTrue(
-            InstantCommand(lambda: self.robot_drive.queue_state("zero_heading", 0))
+            InstantCommand(lambda: self.robot_drive.zero_heading(), self.robot_drive)
         )
 
         self.driver_controller.povRight().onTrue(
@@ -76,3 +92,8 @@ class RobotContainer:
 
         # self.driver_controller.a().onTrue(self.start_intake)
         # self.driver_controller.a().onFalse(self.stop_intake)
+
+    def get_autonomous_command(self):
+        return SequentialCommandGroup(
+            ProxyCommand(lambda: self.sendable_chooser.getSelected())
+        )
