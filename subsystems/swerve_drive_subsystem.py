@@ -12,7 +12,7 @@ from phoenix6.hardware import Pigeon2
 from simple_state_system import *
 from subsystems.swerve_module_subsystem import SwerveModuleSubsystem
 from subsystems.vision_subsystem import VisionSubsystem
-from wpilib import DriverStation
+from wpilib import DriverStation, SmartDashboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics, SwerveModuleState
@@ -88,7 +88,7 @@ class SwerveDriveSubsystem(Subsystem):
                     speeds, feedforwards
                 ),
                 PPHolonomicDriveController(
-                    PIDConstants(12.50, 5.6, 1.81), PIDConstants(9.75, 1.6, 0.6)
+                    PIDConstants(13.50, 5.6, 1.9), PIDConstants(9.75, 1.6, 0.6)
                 ),
                 robot_config,
                 lambda: DriverStation.getAlliance()
@@ -102,8 +102,9 @@ class SwerveDriveSubsystem(Subsystem):
         # Run internal periodic functions
         # super().periodic()
 
-        if DriverStation.isEnabled():
-            print(self.get_pose())
+        # if DriverStation.isEnabled():
+        robot_pose = self.get_pose()
+        SmartDashboard.putNumber("Red Hub Dist", ((robot_pose.X() - (11.84))**2 + (robot_pose.Y() - 4.035)**2) ** 0.5)
 
         self.odometry.update(
             self.gyro.getRotation2d(),

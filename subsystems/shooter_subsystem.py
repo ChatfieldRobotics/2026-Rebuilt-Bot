@@ -1,11 +1,16 @@
+from math import pi
+
+import commands2.sysid
 from phoenix6.configs import TalonFXConfiguration
 from phoenix6.hardware import TalonFX
 from phoenix6.signals import NeutralModeValue
-from phoenix6.controls import MotionMagicVelocityVoltage
-from wpilib import DriverStation
+from phoenix6.controls import VelocityVoltage, VoltageOut
+from wpilib import DriverStation, SmartDashboard
 from constants import CANConstants, ShooterConstants
 from simple_state_system import *
 from time import sleep
+
+import commands2
 
 
 class ShooterSubsytem(StateSystem):
@@ -18,17 +23,16 @@ class ShooterSubsytem(StateSystem):
         # Initialize the state machine
         super().__init__()
 
+        SmartDashboard.putNumber("Target Shooter Rps", ShooterConstants.optimal_upper_roller_rps)
+
         roller_config = TalonFXConfiguration()
         motion_magic_config = roller_config.motion_magic
         intake_slot0 = roller_config.slot0
 
-        intake_slot0.k_p = 0.475
-        intake_slot0.k_i = 0.4
-        intake_slot0.k_d = 0.0
-
-        motion_magic_config.motion_magic_cruise_velocity = 8000
-        motion_magic_config.motion_magic_acceleration = 14000
-        motion_magic_config.motion_magic_jerk = 20000
+        intake_slot0.k_s = 0.18
+        intake_slot0.k_v = 0.123
+        intake_slot0.k_p = 0.4
+        intake_slot0.k_d = 0.006
 
         self.upper_roller_motor.setNeutralMode(NeutralModeValue.COAST)
         self.lower_roller_motor.setNeutralMode(NeutralModeValue.COAST)
@@ -40,31 +44,29 @@ class ShooterSubsytem(StateSystem):
         self.conveyor_motor.configurator.apply(roller_config)
         self.trigger_motor.configurator.apply(roller_config)
 
-        self.start_timer = None
-
     def periodic(self):
         # Run internal periodic functions
         super().periodic()
 
     @state
     def start_conveyor(self):
-        self.conveyor_motor.set_control(MotionMagicVelocityVoltage(-20))
+        self.conveyor_motor.set_control(VelocityVoltage(-20))
         return True
 
     @state
     def init_shooter(self):
         self.upper_roller_motor.set_control(
-            MotionMagicVelocityVoltage(
-                ShooterConstants.optimal_upper_roller_rps
+            VelocityVoltage(
+                SmartDashboard.getNumber("Target Shooter Rps", ShooterConstants.optimal_upper_roller_rps)
             )
         )
         self.lower_roller_motor.set_control(
-            MotionMagicVelocityVoltage(
-                ShooterConstants.optimal_lower_roller_rps
+            VelocityVoltage(
+                -SmartDashboard.getNumber("Target Shooter Rps", ShooterConstants.optimal_upper_roller_rps)
             )
         )
 
-        sleep(0.25)
+        sleep(1.0)
 
         return True
 
@@ -80,9 +82,9 @@ class ShooterSubsytem(StateSystem):
 
     @state
     def advance_balls(self):
-        self.trigger_motor.set_control(MotionMagicVelocityVoltage(-90))
+        self.trigger_motor.set_control(VelocityVoltage(-90))
         self.conveyor_motor.set_control(
-            MotionMagicVelocityVoltage(
+            VelocityVoltage(
                 -90
             )
         )

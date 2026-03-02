@@ -28,7 +28,7 @@ driving_config.encoder.positionConversionFactor(
     driving_factor
 ).velocityConversionFactor(driving_factor / 60.0)
 driving_config.closedLoop.setFeedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(
-    0.04, 0.0, 0.0
+    0.08, 0.0, 0.0
 ).velocityFF(driving_velocity_feed_forward).outputRange(-1.0, 1.0)
 # driving_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
 #     20

@@ -13,6 +13,7 @@ from subsystems.vision_subsystem import VisionSubsystem
 from wpilib.interfaces import GenericHID
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands
+from commands2.sysid import SysIdRoutine
 
 
 class RobotContainer:
@@ -89,9 +90,6 @@ class RobotContainer:
         self.driver_controller.rightTrigger().onFalse(
             InstantCommand(lambda: self.shooter_subsystem.queue_state("disable_shooter", 0))
         )
-
-        # self.driver_controller.a().onTrue(self.start_intake)
-        # self.driver_controller.a().onFalse(self.stop_intake)
 
     def get_autonomous_command(self):
         return SequentialCommandGroup(
