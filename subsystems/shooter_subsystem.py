@@ -1,16 +1,12 @@
 from math import pi
 
-import commands2.sysid
-from phoenix6.configs import TalonFXConfiguration
 from phoenix6.hardware import TalonFX
 from phoenix6.signals import NeutralModeValue
-from phoenix6.controls import VelocityVoltage, VoltageOut
-from wpilib import DriverStation, SmartDashboard
+from phoenix6.controls import VelocityVoltage
+from configs import ShooterConfigs
 from constants import CANConstants, ShooterConstants
 from simple_state_system import *
 from time import sleep
-
-import commands2
 
 from subsystems.swerve_drive_subsystem import SwerveDriveSubsystem
 
@@ -27,23 +23,15 @@ class ShooterSubsytem(StateSystem):
 
         self.robot_drive = robot_drive
 
-        roller_config = TalonFXConfiguration()
-        intake_slot0 = roller_config.slot0
-
-        intake_slot0.k_s = 0.18
-        intake_slot0.k_v = 0.123
-        intake_slot0.k_p = 0.4
-        intake_slot0.k_d = 0.006
-
         self.upper_roller_motor.setNeutralMode(NeutralModeValue.COAST)
         self.lower_roller_motor.setNeutralMode(NeutralModeValue.COAST)
         self.conveyor_motor.setNeutralMode(NeutralModeValue.COAST)
         self.trigger_motor.setNeutralMode(NeutralModeValue.BRAKE)
 
-        self.upper_roller_motor.configurator.apply(roller_config)
-        self.lower_roller_motor.configurator.apply(roller_config)
-        self.conveyor_motor.configurator.apply(roller_config)
-        self.trigger_motor.configurator.apply(roller_config)
+        self.upper_roller_motor.configurator.apply(ShooterConfigs.roller_config)
+        self.lower_roller_motor.configurator.apply(ShooterConfigs.roller_config)
+        self.conveyor_motor.configurator.apply(ShooterConfigs.roller_config)
+        self.trigger_motor.configurator.apply(ShooterConfigs.roller_config)
 
     def periodic(self):
         # Run internal periodic functions
@@ -76,7 +64,6 @@ class ShooterSubsytem(StateSystem):
 
     @state
     def ensure_velocity(self):
-        # print(self.upper_roller_motor.get_velocity().value_as_double, self.lower_roller_motor.get_velocity().value_as_double)
         target_rps = self.get_shooter_rps_from_dist(self.robot_drive.get_hub_dist())
         return (
             abs(self.upper_roller_motor.get_velocity().value_as_double - target_rps)
@@ -87,8 +74,8 @@ class ShooterSubsytem(StateSystem):
 
     @state
     def advance_balls(self):
-        self.trigger_motor.set_control(VelocityVoltage(-90))
-        self.conveyor_motor.set_control(VelocityVoltage(-90))
+        self.trigger_motor.set_control(VelocityVoltage(ShooterConstants.advancement_motor_rps))
+        self.conveyor_motor.set_control(VelocityVoltage(ShooterConstants.conveyor_motor_rps))
         return True
 
     @state
@@ -106,8 +93,8 @@ class ShooterSubsytem(StateSystem):
         ):
             return False
 
-        self.trigger_motor.set_control(VelocityVoltage(-90))
-        self.conveyor_motor.set_control(VelocityVoltage(-90))
+        self.trigger_motor.set_control(VelocityVoltage(ShooterConstants.advancement_motor_rps))
+        self.conveyor_motor.set_control(VelocityVoltage(ShooterConstants.conveyor_motor_rps))
 
         return False
 

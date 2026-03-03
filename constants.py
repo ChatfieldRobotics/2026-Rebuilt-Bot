@@ -1,6 +1,6 @@
 from wpimath.controller import ProfiledPIDController
 from wpimath.trajectory import TrapezoidProfile
-from wpimath.geometry import Transform3d, Translation2d, Translation3d, Rotation3d
+from wpimath.geometry import Pose2d, Transform3d, Translation2d, Translation3d, Rotation3d
 from wpimath.units import inchesToMeters
 from wpimath.kinematics import SwerveDrive4Kinematics
 
@@ -19,11 +19,8 @@ class CANConstants:
 
 
 class ShooterConstants:
-    optimal_shooter_distance: float = 60
-    optimal_upper_roller_rps: float = 32
-    optimal_lower_roller_rps: float = -32
-
-    advancement_motor_rps: float = 10
+    advancement_motor_rps: float = -90
+    conveyor_motor_rps: float = -90
 
     minimum_acceptable_closed_loop_error: float = 1
 
@@ -69,7 +66,7 @@ class DriveConstants:
 
 
 class ModuleConstants:
-    driving_motor_pinion_teeth = 13
+    driving_motor_pinion_teeth = 12
 
     driving_motor_free_speed_rps = NeoMotorConstants.free_speed_rpm / 60.0
     wheel_diameter_meters = 0.0753
@@ -85,7 +82,6 @@ class ModuleConstants:
 
 class OIConstants:
     driver_controller_port = 0
-    copilot_controller_port = 1
 
     drive_deadband = 0.05
 
@@ -97,30 +93,13 @@ class VisionConstants:
     )
 
 
-class AutoConstants:
-    x_pid_controller = ProfiledPIDController(
-        2.25,
-        0.85,
-        0.31,
-        TrapezoidProfile.Constraints(
-            DriveConstants.max_speed_meters_per_second,
-            1.5 * DriveConstants.max_speed_meters_per_second,
-        ),
-    )
-    y_pid_controller = ProfiledPIDController(
-        2.25,
-        0.85,
-        0.31,
-        TrapezoidProfile.Constraints(
-            DriveConstants.max_speed_meters_per_second,
-            1.5 * DriveConstants.max_speed_meters_per_second,
-        ),
-    )
-    theta_pid_controller = ProfiledPIDController(
-        3.70,
-        1.60,
-        0.60,
-        TrapezoidProfile.Constraints(
-            DriveConstants.max_angular_speed, 1.5 * DriveConstants.max_angular_speed
-        ),
-    )
+class HopperConstants:
+    extended_position: float = 15.5
+    retracted_position: float = 0.0
+
+    intake_speed: float = -0.9
+
+
+class FieldConstants:
+    red_hub_pose = Pose2d(11.84, 4.035, Rotation3d(0))
+    blue_hub_pose = Pose2d(4.606, 4.035, Rotation3d(pi))

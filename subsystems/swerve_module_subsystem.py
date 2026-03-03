@@ -13,7 +13,7 @@ from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
 
 from wpimath.geometry import Rotation2d
 
-import configs
+from configs import DriveConfigs
 
 
 class SwerveModuleSubsystem:
@@ -34,12 +34,12 @@ class SwerveModuleSubsystem:
         )
 
         self.driving_spark.configure(
-            configs.driving_config,
+            DriveConfigs.driving_config,
             ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters,
         )
         self.turning_spark.configure(
-            configs.turning_config,
+            DriveConfigs.turning_config,
             ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters,
         )

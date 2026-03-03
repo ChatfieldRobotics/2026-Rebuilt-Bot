@@ -3,7 +3,7 @@ from typing import List
 from numpy import arctan
 import wpilib
 
-from constants import CANConstants, DriveConstants, ShooterConstants, AutoConstants
+from constants import CANConstants, DriveConstants, FieldConstants, OIConstants, ShooterConstants, AutoConstants
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants
@@ -116,11 +116,11 @@ class SwerveDriveSubsystem(Subsystem):
     def get_hub_dist(self):
         """Returns the distance from the robot to the hub in meters. The hub position is defined based on the alliance color in the field coordinate system."""
         if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
-            hub_x = 11.84
-            hub_y = 4.035
+            hub_x = FieldConstants.red_hub_pose.X()
+            hub_y = FieldConstants.red_hub_pose.Y()
         else:
-            hub_x = 4.606
-            hub_y = 4.035
+            hub_x = FieldConstants.blue_hub_pose.X()
+            hub_y = FieldConstants.blue_hub_pose.Y()
 
         return (
             (self.get_pose().X() - hub_x) ** 2 + (self.get_pose().Y() - hub_y) ** 2
@@ -231,11 +231,11 @@ class SwerveDriveSubsystem(Subsystem):
 
         # Define the hub position based on the alliance color in the field coordinate system.
         if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
-            hub_x = 11.84
-            hub_y = 4.035
+            hub_x = FieldConstants.red_hub_pose.X()
+            hub_y = FieldConstants.red_hub_pose.Y()
         else:
-            hub_x = 4.606
-            hub_y = 4.035
+            hub_x = FieldConstants.blue_hub_pose.X()
+            hub_y = FieldConstants.blue_hub_pose.Y()
 
         # Calculate the angle to the hub from the robot's current position and create a PID controller to rotate towards that angle. The PID controller is configured with the constraints defined in constants.py and a proportional gain of 3.0, which was determined through testing to provide good responsiveness without excessive overshoot.
         robot_pose = self.get_pose()
@@ -325,15 +325,15 @@ class SwerveDriveSubsystem(Subsystem):
 
         if driver_controller.rightBumper().getAsBoolean():
             self.drive_hub_relative(
-                x_speed=-self.apply_deadband(driver_controller.getLeftY(), 0.1),
-                y_speed=-self.apply_deadband(driver_controller.getLeftX(), 0.1),
+                x_speed=-self.apply_deadband(driver_controller.getLeftY(), OIConstants.drive_deadband),
+                y_speed=-self.apply_deadband(driver_controller.getLeftX(), OIConstants.drive_deadband),
                 slow_mode=driver_controller.leftTrigger(0.2).getAsBoolean(),
             )
         else: 
             self.drive(
-                x_speed=-self.apply_deadband(driver_controller.getLeftY(), 0.1),
-                y_speed=-self.apply_deadband(driver_controller.getLeftX(), 0.1),
-                rot=-self.apply_deadband(driver_controller.getRightX(), 0.1),
+                x_speed=-self.apply_deadband(driver_controller.getLeftY(), OIConstants.drive_deadband),
+                y_speed=-self.apply_deadband(driver_controller.getLeftX(), OIConstants.drive_deadband),
+                rot=-self.apply_deadband(driver_controller.getRightX(), OIConstants.drive_deadband),
                 field_relative=field_relative,
                 slow_mode=driver_controller.leftTrigger(0.2).getAsBoolean(),
         )

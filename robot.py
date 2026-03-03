@@ -14,9 +14,6 @@ class Robot(wpilib.TimedRobot):
     def robotInit(self):
         SmartDashboard.putData("Field", self.field)
 
-        wpilib.DataLogManager.start()
-        wpilib.DriverStation.startDataLog(wpilib.DataLogManager.getLog())
-
     def robotPeriodic(self):
         self.field.setRobotPose(self.robot_container.robot_drive.get_pose())
 
