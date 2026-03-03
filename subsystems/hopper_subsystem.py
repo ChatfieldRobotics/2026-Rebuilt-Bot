@@ -3,6 +3,7 @@ from phoenix6.hardware import TalonFX, TalonFXS
 from phoenix6.signals import MotorArrangementValue, NeutralModeValue
 from phoenix6.controls import MotionMagicVoltage, MotionMagicVelocityVoltage
 from constants import CANConstants, ShooterConstants
+from configs import HopperConfigs
 from simple_state_system import *
 
 
@@ -26,14 +27,14 @@ class HopperSubsystem(StateSystem):
             MotorArrangementValue.MINION_JST
         )
 
-        hopper_slot0.k_p = 0.65
-        hopper_slot0.k_i = 0.15
-        hopper_slot0.k_d = 0.0
+        hopper_slot0.k_p = HopperConfigs.hopper_k_p
+        hopper_slot0.k_i = HopperConfigs.hopper_k_i
+        hopper_slot0.k_d = HopperConfigs.hopper_k_d
 
-        motion_magic_configs.motion_magic_cruise_velocity = 1600
-        motion_magic_configs.motion_magic_acceleration = 2400
-        motion_magic_configs.motion_magic_jerk = 3600
-
+        motion_magic_configs.motion_magic_cruise_velocity = HopperConfigs.motion_magic_cruise_velocity
+        motion_magic_configs.motion_magic_acceleration = HopperConfigs.motion_magic_acceleration
+        motion_magic_configs.motion_magic_jerk = HopperConfigs.motion_magic_jerk
+        
         limit_configs.stator_current_limit_enable = True
         limit_configs.stator_current_limit = 15
 
@@ -46,9 +47,9 @@ class HopperSubsystem(StateSystem):
         intake_motor_config = TalonFXConfiguration()
         intake_slot0 = intake_motor_config.slot0
 
-        intake_slot0.k_p = 0.1
-        intake_slot0.k_i = 0.0
-        intake_slot0.k_d = 0.0
+        intake_slot0.k_p = HopperConfigs.intake_k_p
+        intake_slot0.k_i = HopperConfigs.hopper_k_i
+        intake_slot0.k_d = HopperConfigs.intake_k_d
 
         self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
 

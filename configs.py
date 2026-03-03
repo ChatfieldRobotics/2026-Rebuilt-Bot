@@ -30,3 +30,21 @@ turning_config.closedLoop.setFeedbackSensor(FeedbackSensor.kAbsoluteEncoder).pid
 ).outputRange(-1.0, 1.0).positionWrappingEnabled(True).positionWrappingInputRange(
     0, turning_factor
 )
+
+
+
+class HopperConfigs:
+    hopper_k_p = 0.65
+    hopper_k_i = 0.15
+    hopper_k_d = 0.0
+
+    motion_magic_cruise_velocity = 1600
+    motion_magic_acceleration = 2400
+    motion_magic_jerk = 3600
+
+    intake_k_p = 0.1
+    intake_k_i = 0.0
+    intake_k_d = 0.0
+
+    
+
