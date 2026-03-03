@@ -79,7 +79,13 @@ class HopperConfigs:
 
 
 class ShooterConfigs:
-    pass
+    roller_config = TalonFXConfiguration()
+    intake_slot0 = roller_config.slot0
 
+    intake_slot0.k_s = 0.18
+    intake_slot0.k_v = 0.123
+    intake_slot0.k_p = 0.4
+    intake_slot0.k_d = 0.006
 
+    
 

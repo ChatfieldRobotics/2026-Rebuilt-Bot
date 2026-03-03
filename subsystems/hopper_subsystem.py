@@ -21,9 +21,9 @@ class HopperSubsystem(StateSystem):
         self.right_intake.setNeutralMode(NeutralModeValue.COAST)
         self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
 
-        self.left_intake.configurator.apply(hopper_motor_config)
-        self.right_intake.configurator.apply(hopper_motor_config)
-        self.intake_motor.configurator.apply(HopperConfigs.hopper_motor_config)
+        self.left_intake.configurator.apply(HopperConfigs.left_intake)
+        self.right_intake.configurator.apply(HopperConfigs.right_intake)
+        self.intake_motor.configurator.apply(HopperConfigs.intake_motor_config)
 
     def periodic(self):
         # Run internal periodic functions

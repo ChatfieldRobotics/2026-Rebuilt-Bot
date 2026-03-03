@@ -7,6 +7,7 @@ from phoenix6.signals import NeutralModeValue
 from phoenix6.controls import VelocityVoltage, VoltageOut
 from wpilib import DriverStation, SmartDashboard
 from constants import CANConstants, ShooterConstants
+from configs import ShooterConfigs
 from simple_state_system import *
 from time import sleep
 
@@ -27,23 +28,15 @@ class ShooterSubsytem(StateSystem):
 
         self.robot_drive = robot_drive
 
-        roller_config = TalonFXConfiguration()
-        intake_slot0 = roller_config.slot0
-
-        intake_slot0.k_s = 0.18
-        intake_slot0.k_v = 0.123
-        intake_slot0.k_p = 0.4
-        intake_slot0.k_d = 0.006
-
         self.upper_roller_motor.setNeutralMode(NeutralModeValue.COAST)
         self.lower_roller_motor.setNeutralMode(NeutralModeValue.COAST)
         self.conveyor_motor.setNeutralMode(NeutralModeValue.COAST)
         self.trigger_motor.setNeutralMode(NeutralModeValue.BRAKE)
 
-        self.upper_roller_motor.configurator.apply(roller_config)
-        self.lower_roller_motor.configurator.apply(roller_config)
-        self.conveyor_motor.configurator.apply(roller_config)
-        self.trigger_motor.configurator.apply(roller_config)
+        self.upper_roller_motor.configurator.apply(ShooterConfigs.roller_config)
+        self.lower_roller_motor.configurator.apply(ShooterConfigs.roller_config)
+        self.conveyor_motor.configurator.apply(ShooterConfigs.roller_config)
+        self.trigger_motor.configurator.apply(ShooterConfigs.roller_config)
 
     def periodic(self):
         # Run internal periodic functions
