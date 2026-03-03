@@ -24,7 +24,7 @@ class RobotContainer:
         self.vision_subsystem = VisionSubsystem("APTCam")
         self.robot_drive = SwerveDriveSubsystem(self.vision_subsystem)
         self.hopper_subsystem = HopperSubsystem()
-        self.shooter_subsystem = ShooterSubsytem()
+        self.shooter_subsystem = ShooterSubsytem(self.robot_drive)
 
         self.set_controller_bindings()
         self.configure_named_commands()
