@@ -12,6 +12,8 @@ from time import sleep
 
 import commands2
 
+from subsystems.swerve_drive_subsystem import SwerveDriveSubsystem
+
 
 class ShooterSubsytem(StateSystem):
     upper_roller_motor = TalonFX(CANConstants.upper_roller_motor)
@@ -19,14 +21,13 @@ class ShooterSubsytem(StateSystem):
     conveyor_motor = TalonFX(CANConstants.conveyor_motor)
     trigger_motor = TalonFX(CANConstants.trigger_motor)
 
-    def __init__(self):
+    def __init__(self, robot_drive: SwerveDriveSubsystem):
         # Initialize the state machine
         super().__init__()
 
-        SmartDashboard.putNumber("Target Shooter Rps", ShooterConstants.optimal_upper_roller_rps)
+        self.robot_drive = robot_drive
 
         roller_config = TalonFXConfiguration()
-        motion_magic_config = roller_config.motion_magic
         intake_slot0 = roller_config.slot0
 
         intake_slot0.k_s = 0.18
@@ -48,6 +49,9 @@ class ShooterSubsytem(StateSystem):
         # Run internal periodic functions
         super().periodic()
 
+    def get_shooter_rps_from_dist(self, dist: float) -> float:
+        return 8.5 * dist**2 - 40.35 * dist + 79.575
+
     @state
     def start_conveyor(self):
         self.conveyor_motor.set_control(VelocityVoltage(-20))
@@ -57,12 +61,12 @@ class ShooterSubsytem(StateSystem):
     def init_shooter(self):
         self.upper_roller_motor.set_control(
             VelocityVoltage(
-                SmartDashboard.getNumber("Target Shooter Rps", ShooterConstants.optimal_upper_roller_rps)
+                self.get_shooter_rps_from_dist(self.robot_drive.get_hub_dist())
             )
         )
         self.lower_roller_motor.set_control(
             VelocityVoltage(
-                -SmartDashboard.getNumber("Target Shooter Rps", ShooterConstants.optimal_upper_roller_rps)
+                -self.get_shooter_rps_from_dist(self.robot_drive.get_hub_dist())
             )
         )
 
@@ -73,10 +77,11 @@ class ShooterSubsytem(StateSystem):
     @state
     def ensure_velocity(self):
         # print(self.upper_roller_motor.get_velocity().value_as_double, self.lower_roller_motor.get_velocity().value_as_double)
+        target_rps = self.get_shooter_rps_from_dist(self.robot_drive.get_hub_dist())
         return (
-            abs(self.upper_roller_motor.get_closed_loop_error().value_as_double)
+            abs(self.upper_roller_motor.get_velocity().value_as_double - target_rps)
             < ShooterConstants.minimum_acceptable_closed_loop_error
-            and abs(self.lower_roller_motor.get_closed_loop_error().value_as_double)
+            and abs(self.lower_roller_motor.get_velocity().value_as_double - target_rps)
             < ShooterConstants.minimum_acceptable_closed_loop_error
         )
 
@@ -89,6 +94,36 @@ class ShooterSubsytem(StateSystem):
             )
         )
         return True
+
+    @state
+    def shoot(self):
+        target_rps = self.get_shooter_rps_from_dist(self.robot_drive.get_hub_dist())
+
+        self.upper_roller_motor.set_control(
+            VelocityVoltage(
+                target_rps
+            )
+        )
+        self.lower_roller_motor.set_control(
+            VelocityVoltage(
+                -target_rps
+            )
+        )
+
+        if not (abs(self.upper_roller_motor.get_velocity().value_as_double - target_rps)
+            < ShooterConstants.minimum_acceptable_closed_loop_error
+            and abs(self.lower_roller_motor.get_velocity().value_as_double - target_rps)
+            < ShooterConstants.minimum_acceptable_closed_loop_error):
+            return False
+        
+        self.trigger_motor.set_control(VelocityVoltage(-90))
+        self.conveyor_motor.set_control(
+            VelocityVoltage(
+                -90
+            )
+        )
+
+        return False
 
     @state
     def disable_shooter(self):

@@ -75,6 +75,10 @@ class RobotContainer:
             InstantCommand(lambda: self.robot_drive.zero_heading(), self.robot_drive)
         )
 
+        self.driver_controller.rightBumper().whileTrue(
+            RunCommand(lambda: self.robot_drive.point_towards_hub(self.driver_controller), self.robot_drive)
+        )
+
         self.driver_controller.povRight().onTrue(
             InstantCommand(lambda: self.hopper_subsystem.queue_states(
                 "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
@@ -83,7 +87,7 @@ class RobotContainer:
         
         self.driver_controller.rightTrigger().onTrue(
             InstantCommand(lambda: self.shooter_subsystem.queue_states(
-                "init_shooter", "ensure_velocity", "advance_balls"
+                "shoot"
             ))
         )
 

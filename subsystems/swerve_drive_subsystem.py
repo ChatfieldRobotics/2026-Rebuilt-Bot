@@ -18,6 +18,7 @@ from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics, SwerveModuleState
 from commands2.button import CommandXboxController
 from commands2.subsystem import Subsystem
+from wpimath.controller import ProfiledPIDControllerRadians
 
 
 class SwerveDriveSubsystem(Subsystem):
@@ -64,6 +65,8 @@ class SwerveDriveSubsystem(Subsystem):
     y_pid_controller = AutoConstants.y_pid_controller
     theta_pid_controller = AutoConstants.theta_pid_controller
 
+    x_timer = None
+
     # The parametric value used for orbiting the hub
     t: float = 0
 
@@ -71,7 +74,7 @@ class SwerveDriveSubsystem(Subsystem):
 
     def __init__(self, vision_subsystem: VisionSubsystem):
         # Initialize the state machine
-        # super().__init__()
+        super().__init__()
 
         self.vision_subsystem = vision_subsystem
 
@@ -100,11 +103,12 @@ class SwerveDriveSubsystem(Subsystem):
 
     def periodic(self):
         # Run internal periodic functions
-        # super().periodic()
+        super().periodic()
 
         # if DriverStation.isEnabled():
         robot_pose = self.get_pose()
         SmartDashboard.putNumber("Red Hub Dist", ((robot_pose.X() - (11.84))**2 + (robot_pose.Y() - 4.035)**2) ** 0.5)
+        SmartDashboard.putNumber("Blue Hub Dist", ((robot_pose.X() - (4.606))**2 + (robot_pose.Y() - 4.035)**2) ** 0.5)
 
         self.odometry.update(
             self.gyro.getRotation2d(),
@@ -121,6 +125,16 @@ class SwerveDriveSubsystem(Subsystem):
             self.odometry.addVisionMeasurement(
                 robot_pose.estimatedPose.toPose2d(), robot_pose.timestampSeconds
             )
+
+    def get_hub_dist(self): 
+        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+            hub_x = 11.84
+            hub_y = 4.035
+        else: 
+            hub_x = 4.606
+            hub_y = 4.035
+        
+        return ((self.get_pose().X() - hub_x)**2 + (self.get_pose().Y() - hub_y)**2) ** 0.5
 
     def get_pose(self) -> Pose2d:
         return self.odometry.getEstimatedPosition()
@@ -168,6 +182,15 @@ class SwerveDriveSubsystem(Subsystem):
             * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
             * (-1.0 if DriveConstants.gyro_reversed else 1.0)
         )
+
+        if x_speed_delivered == 0 and y_speed_delivered == 0 and rot_delivered == 0:
+            if self.x_timer is None:
+              self.x_timer = wpilib.Timer.getFPGATimestamp()
+            if wpilib.Timer.getFPGATimestamp() - self.x_timer > DriveConstants.x_duration:
+                self.set_x()
+            return
+
+        self.x_timer = None
 
         swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
             ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -234,6 +257,12 @@ class SwerveDriveSubsystem(Subsystem):
             * sin(5 * pi / 6 * self.t + 7 * pi / 12),
             5 * pi / 6 * self.t + 7 * pi / 12,
         ]
+    
+    def apply_deadband(self, value: float, deadband: float) -> float:
+        if abs(value) < deadband:
+            return 0.0
+        else:
+            return (value - deadband * (1 if value > 0 else -1)) / (1 - deadband)
 
     def default_drive(
         self, driver_controller: CommandXboxController, field_relative: bool
@@ -242,12 +271,53 @@ class SwerveDriveSubsystem(Subsystem):
             return False
 
         self.drive(
-            -driver_controller.getLeftY(),
-            -driver_controller.getLeftX(),
-            -driver_controller.getRightX(),
+            -self.apply_deadband(driver_controller.getLeftY(), 0.1),
+            -self.apply_deadband(driver_controller.getLeftX(), 0.1),
+            -self.apply_deadband(driver_controller.getRightX(), 0.1),
             field_relative,
         )
         return False
+    
+    def point_towards_hub(self, driver_controller: CommandXboxController): 
+        x_speed_delivered = (
+            -self.apply_deadband(driver_controller.getLeftY(), 0.1)
+            * DriveConstants.max_speed_meters_per_second
+            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
+        )
+        y_speed_delivered = (
+            -self.apply_deadband(driver_controller.getLeftX(), 0.1)
+            * DriveConstants.max_speed_meters_per_second
+            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
+        )
+
+        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+            hub_x = 11.84
+            hub_y = 4.035 
+        else:
+            hub_x = 4.606
+            hub_y = 4.035
+
+        robot_pose = self.get_pose()
+        angle_to_hub = arctan(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
+
+        theta_pid_controller = ProfiledPIDControllerRadians(3.0, 0.0, 0.0, AutoConstants.theta_pid_controller.constraints)
+        theta_pid_controller.setGoal(angle_to_hub)
+
+        theta_pid_output = theta_pid_controller.calculate(robot_pose.rotation().radians())
+
+        swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                x_speed_delivered,
+                y_speed_delivered,
+                theta_pid_output,
+                Rotation2d(angle_to_hub),
+            )
+        )
+
+        self.set_module_states(swerve_module_states)
+        return abs(theta_pid_controller.getPositionError()) < 0.05            
 
     def pre_orbit(self):
         # NEED TO IMPLEMENT T CALCULATION

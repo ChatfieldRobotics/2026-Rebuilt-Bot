@@ -64,6 +64,9 @@ class DriveConstants:
 
     gyro_reversed = False
 
+    x_duration = 0.25
+
+
 
 class ModuleConstants:
     driving_motor_pinion_teeth = 13
