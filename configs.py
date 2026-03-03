@@ -50,17 +50,36 @@ turning_config.closedLoop.setFeedbackSensor(FeedbackSensor.kAbsoluteEncoder).pid
 
 
 class HopperConfigs:
-    hopper_k_p = 0.65
-    hopper_k_i = 0.15
-    hopper_k_d = 0.0
+    hopper_motor_config = TalonFXSConfiguration()
+    hopper_slot0 = hopper_motor_config.slot0
+    motion_magic_configs = hopper_motor_config.motion_magic
+    limit_configs = hopper_motor_config.current_limits
 
-    motion_magic_cruise_velocity = 1600
-    motion_magic_acceleration = 2400
-    motion_magic_jerk = 3600
+    hopper_motor_config.commutation.motor_arrangement = (
+        MotorArrangementValue.MINION_JST
+    )
 
-    intake_k_p = 0.1
-    intake_k_i = 0.0
-    intake_k_d = 0.0
+    hopper_slot0.k_p = 0.65
+    hopper_slot0.k_i = 0.15
+    hopper_slot0.k_d = 0.0
 
+    motion_magic_configs.motion_magic_cruise_velocity = 1600
+    motion_magic_configs.motion_magic_acceleration = 2400
+    motion_magic_configs.motion_magic_jerk = 3600
     
+    limit_configs.stator_current_limit_enable = True
+    limit_configs.stator_current_limit = 15
+
+    intake_motor_config = TalonFXConfiguration()
+    intake_slot0 = intake_motor_config.slot0
+
+    intake_slot0.k_p = 0.1
+    intake_slot0.k_i = 0.0
+    intake_slot0.k_d = 0.0
+
+
+class ShooterConfigs:
+    pass
+
+
 
