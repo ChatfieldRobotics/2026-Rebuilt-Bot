@@ -1,6 +1,6 @@
-from wpimath.controller import ProfiledPIDController
 from wpimath.trajectory import TrapezoidProfile
-from wpimath.geometry import Pose2d, Transform3d, Translation2d, Translation3d, Rotation3d
+from wpimath.controller import ProfiledPIDController
+from wpimath.geometry import Pose2d, Transform3d, Translation2d, Translation3d, Rotation2d, Rotation3d
 from wpimath.units import inchesToMeters
 from wpimath.kinematics import SwerveDrive4Kinematics
 
@@ -101,5 +101,15 @@ class HopperConstants:
 
 
 class FieldConstants:
-    red_hub_pose = Pose2d(11.84, 4.035, Rotation3d(0))
-    blue_hub_pose = Pose2d(4.606, 4.035, Rotation3d(pi))
+    red_hub_pose = Pose2d(11.84, 4.035, Rotation2d(0))
+    blue_hub_pose = Pose2d(4.606, 4.035, Rotation2d(0))
+
+class AutoConstants:
+    theta_pid_controller = ProfiledPIDController(
+        3.70,
+        1.60,
+        0.60,
+        TrapezoidProfile.Constraints(
+            DriveConstants.max_angular_speed, 1.5 * DriveConstants.max_angular_speed
+        ),
+    )

@@ -3,7 +3,7 @@ from typing import List
 from numpy import arctan
 import wpilib
 
-from constants import CANConstants, DriveConstants, FieldConstants, OIConstants, ShooterConstants, AutoConstants
+from constants import CANConstants, DriveConstants, FieldConstants, OIConstants, AutoConstants
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants
@@ -323,7 +323,7 @@ class SwerveDriveSubsystem(Subsystem):
         if DriverStation.isDisabled():
             return False
 
-        if driver_controller.rightBumper().getAsBoolean():
+        if driver_controller.povLeft().getAsBoolean():
             self.drive_hub_relative(
                 x_speed=-self.apply_deadband(driver_controller.getLeftY(), OIConstants.drive_deadband),
                 y_speed=-self.apply_deadband(driver_controller.getLeftX(), OIConstants.drive_deadband),
