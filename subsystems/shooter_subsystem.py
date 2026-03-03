@@ -5,6 +5,7 @@ from phoenix6.signals import NeutralModeValue
 from phoenix6.controls import VelocityVoltage
 from configs import ShooterConfigs
 from constants import CANConstants, ShooterConstants
+from configs import ShooterConfigs
 from simple_state_system import *
 from time import sleep
 

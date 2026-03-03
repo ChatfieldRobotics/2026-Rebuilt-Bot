@@ -78,5 +78,3 @@ class ShooterConfigs:
     intake_slot0.k_p = 0.4
     intake_slot0.k_d = 0.006
 
-
-
