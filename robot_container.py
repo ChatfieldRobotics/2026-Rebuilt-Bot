@@ -66,7 +66,7 @@ class RobotContainer:
 
         self.driver_controller.povRight().onTrue(
             InstantCommand(
-                lambda: self.hopper_subsystem.toggle_hopper()
+                lambda: self.hopper_subsystem.queue_state("toggle_hopper")
             )
         )
         

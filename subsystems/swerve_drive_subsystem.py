@@ -1,6 +1,6 @@
 from math import cos, pi, sin
 from typing import List
-from numpy import arctan
+from numpy import atan2
 import wpilib
 
 from constants import CANConstants, DriveConstants, FieldConstants, OIConstants, AutoConstants
@@ -239,10 +239,10 @@ class SwerveDriveSubsystem(Subsystem):
 
         # Calculate the angle to the hub from the robot's current position and create a PID controller to rotate towards that angle. The PID controller is configured with the constraints defined in constants.py and a proportional gain of 3.0, which was determined through testing to provide good responsiveness without excessive overshoot.
         robot_pose = self.get_pose()
-        angle_to_hub = arctan(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
+        angle_to_hub = -atan2(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
 
         theta_pid_controller = ProfiledPIDControllerRadians(
-            3.0, 0.0, 0.0, AutoConstants.theta_pid_controller.constraints
+            3.0, 0.0, 0.0, AutoConstants.theta_pid_controller.getConstraints()
         )
         theta_pid_controller.setGoal(angle_to_hub)
 

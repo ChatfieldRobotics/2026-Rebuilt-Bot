@@ -1,5 +1,5 @@
-from wpimath.trajectory import TrapezoidProfile
-from wpimath.controller import ProfiledPIDController
+from wpimath.trajectory import TrapezoidProfileRadians
+from wpimath.controller import ProfiledPIDControllerRadians
 from wpimath.geometry import Pose2d, Transform3d, Translation2d, Translation3d, Rotation2d, Rotation3d
 from wpimath.units import inchesToMeters
 from wpimath.kinematics import SwerveDrive4Kinematics
@@ -9,13 +9,14 @@ from math import pi
 
 class CANConstants:
     pigeon_id: int = 0
-    right_intake_motor: int = 1
-    left_intake_motor: int = 2
+    right_hopper_motor: int = 1
+    left_hopper_motor: int = 2
     upper_roller_motor: int = 3
     lower_roller_motor: int = 4
     conveyor_motor: int = 5
     trigger_motor: int = 6
-    intake_motor: int = 7
+    right_intake_motor: int = 7
+    left_intake_motor: int = 8
 
 
 class ShooterConstants:
@@ -105,11 +106,11 @@ class FieldConstants:
     blue_hub_pose = Pose2d(4.606, 4.035, Rotation2d(0))
 
 class AutoConstants:
-    theta_pid_controller = ProfiledPIDController(
+    theta_pid_controller = ProfiledPIDControllerRadians(
         3.70,
         1.60,
         0.60,
-        TrapezoidProfile.Constraints(
+        TrapezoidProfileRadians.Constraints(
             DriveConstants.max_angular_speed, 1.5 * DriveConstants.max_angular_speed
         ),
     )

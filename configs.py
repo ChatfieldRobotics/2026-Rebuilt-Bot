@@ -21,9 +21,9 @@ class DriveConfigs:
         driving_factor
     ).velocityConversionFactor(driving_factor / 60.0)
     driving_config.closedLoop.setFeedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(
-        2.25,
-        0.85,
-        0.31,
+        0.1,
+        0.0,
+        0.0,
     ).velocityFF(driving_velocity_feed_forward).outputRange(-1.0, 1.0)
 
     turning_config.setIdleMode(SparkMaxConfig.IdleMode.kBrake).smartCurrentLimit(20)
@@ -31,9 +31,9 @@ class DriveConfigs:
         turning_factor
     ).velocityConversionFactor(turning_factor / 60.0)
     turning_config.closedLoop.setFeedbackSensor(FeedbackSensor.kAbsoluteEncoder).pid(
-        3.70,
-        1.60,
-        0.60,
+        0.90,
+        0.00,
+        0.00,
     ).outputRange(-1.0, 1.0).positionWrappingEnabled(True).positionWrappingInputRange(
         0, turning_factor
     )

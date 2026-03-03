@@ -1,6 +1,6 @@
 from phoenix6.hardware import TalonFX, TalonFXS
-from phoenix6.signals import NeutralModeValue
-from phoenix6.controls import MotionMagicVoltage
+from phoenix6.signals import NeutralModeValue, MotorAlignmentValue
+from phoenix6.controls import MotionMagicVoltage, Follower
 from configs import HopperConfigs
 from constants import CANConstants, HopperConstants
 from simple_state_system import *
@@ -9,9 +9,12 @@ from commands2.button import CommandXboxController
 
 class HopperSubsystem(StateSystem):
     """Subsystem responsible for controlling the hopper mechanism, which includes the intake and the positioning of the hopper itself."""
-    left_intake = TalonFXS(CANConstants.left_intake_motor)
-    right_intake = TalonFXS(CANConstants.right_intake_motor)
-    intake_motor = TalonFX(CANConstants.intake_motor)
+    left_intake = TalonFXS(CANConstants.left_hopper_motor)
+    right_intake = TalonFXS(CANConstants.right_hopper_motor)
+    right_intake_motor = TalonFX(CANConstants.right_intake_motor)
+    left_intake_motor = TalonFX(CANConstants.left_intake_motor)
+
+    intake_follower = Follower(CANConstants.right_intake_motor, MotorAlignmentValue.OPPOSED)
 
     target_hopper_position = 0.0
     hopper_toggle = False
@@ -21,17 +24,21 @@ class HopperSubsystem(StateSystem):
         super().__init__()
         self.left_intake.setNeutralMode(NeutralModeValue.COAST)
         self.right_intake.setNeutralMode(NeutralModeValue.COAST)
-        self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
+        self.right_intake_motor.setNeutralMode(NeutralModeValue.COAST)
+        self.left_intake_motor.setNeutralMode(NeutralModeValue.COAST)
 
         self.left_intake.configurator.apply(HopperConfigs.hopper_motor_config)
         self.right_intake.configurator.apply(HopperConfigs.hopper_motor_config)
-        self.intake_motor.configurator.apply(HopperConfigs.intake_motor_config)
+        self.right_intake_motor.configurator.apply(HopperConfigs.intake_motor_config)
+        self.left_intake_motor.configurator.apply(HopperConfigs.intake_motor_config)
+
+        self.left_intake_motor.set_control(self.intake_follower)
 
     def periodic(self):
         # Run internal periodic functions
         super().periodic()
 
-    def wait_for_hopper_position(self, target_position: float, tolerance: float = 0.1):
+    def wait_for_hopper_position(self, target_position: float, tolerance: float = 0.5):
         """Waits until the hopper reaches the target position within a specified tolerance."""
         while (
             abs(self.left_intake.get_position().value_as_double - target_position) > tolerance
@@ -39,6 +46,7 @@ class HopperSubsystem(StateSystem):
         ):
             sleep(0.02)
 
+    @state
     def toggle_hopper(self):
         """Toggles the hopper between its extended and retracted positions. When toggled, it will move the hopper to the target position and then set the intake motor speed accordingly.
         """
@@ -55,16 +63,16 @@ class HopperSubsystem(StateSystem):
         self.wait_for_hopper_position(self.target_hopper_position)
 
         if self.hopper_toggle:
-            self.intake_motor.set(HopperConstants.intake_speed)
+            self.right_intake_motor.set(HopperConstants.intake_speed)
         else:
-            self.intake_motor.set(0.0)
-    
-    def stop_intake_rollers(self):
-        """Stops the intake rollers by setting the intake motor speed to zero."""
-        self.intake_motor.set(0.0)
+            self.right_intake_motor.set(0.0)
 
+        return True
+
+    @state
     def outtake(self):
         """Sets the intake motor to outtake speed, which is defined in constants.py. This can be used to eject balls from the hopper."""
+        self.hopper_toggle = True
         self.target_hopper_position = HopperConstants.extended_position
 
         self.left_intake.set_control(MotionMagicVoltage(self.target_hopper_position))
@@ -72,4 +80,7 @@ class HopperSubsystem(StateSystem):
 
         self.wait_for_hopper_position(self.target_hopper_position)
 
-        self.intake_motor.set(-HopperConstants.intake_speed)
+        self.right_intake_motor.set(-HopperConstants.intake_speed)
+
+    def stop_intake_rollers(self):
+        self.right_intake_motor.set(0.0)
