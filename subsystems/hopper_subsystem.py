@@ -17,43 +17,13 @@ class HopperSubsystem(StateSystem):
     def __init__(self):
         # Initialize the state machine
         super().__init__()
-
-        hopper_motor_config = TalonFXSConfiguration()
-        hopper_slot0 = hopper_motor_config.slot0
-        motion_magic_configs = hopper_motor_config.motion_magic
-        limit_configs = hopper_motor_config.current_limits
-
-        hopper_motor_config.commutation.motor_arrangement = (
-            MotorArrangementValue.MINION_JST
-        )
-
-        hopper_slot0.k_p = HopperConfigs.hopper_k_p
-        hopper_slot0.k_i = HopperConfigs.hopper_k_i
-        hopper_slot0.k_d = HopperConfigs.hopper_k_d
-
-        motion_magic_configs.motion_magic_cruise_velocity = HopperConfigs.motion_magic_cruise_velocity
-        motion_magic_configs.motion_magic_acceleration = HopperConfigs.motion_magic_acceleration
-        motion_magic_configs.motion_magic_jerk = HopperConfigs.motion_magic_jerk
-        
-        limit_configs.stator_current_limit_enable = True
-        limit_configs.stator_current_limit = 15
-
         self.left_intake.setNeutralMode(NeutralModeValue.COAST)
         self.right_intake.setNeutralMode(NeutralModeValue.COAST)
+        self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
 
         self.left_intake.configurator.apply(hopper_motor_config)
         self.right_intake.configurator.apply(hopper_motor_config)
-
-        intake_motor_config = TalonFXConfiguration()
-        intake_slot0 = intake_motor_config.slot0
-
-        intake_slot0.k_p = HopperConfigs.intake_k_p
-        intake_slot0.k_i = HopperConfigs.hopper_k_i
-        intake_slot0.k_d = HopperConfigs.intake_k_d
-
-        self.intake_motor.setNeutralMode(NeutralModeValue.COAST)
-
-        self.intake_motor.configurator.apply(intake_motor_config)
+        self.intake_motor.configurator.apply(HopperConfigs.hopper_motor_config)
 
     def periodic(self):
         # Run internal periodic functions
