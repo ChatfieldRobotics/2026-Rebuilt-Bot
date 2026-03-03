@@ -3,7 +3,7 @@ from typing import List
 from numpy import arctan
 import wpilib
 
-from constants import DriveConstants, ShooterConstants, AutoConstants
+from constants import CANConstants, DriveConstants, ShooterConstants, AutoConstants
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants
@@ -22,6 +22,9 @@ from wpimath.controller import ProfiledPIDControllerRadians
 
 
 class SwerveDriveSubsystem(Subsystem):
+    """Subsystem for controlling a swerve drive. Contains four swerve modules, a gyro, and odometry. Also contains functions for driving the robot and setting the module states."""
+
+    # Define the four swerve modules. The IDs and angular offsets are defined in constants.py
     front_left = SwerveModuleSubsystem(
         DriveConstants.front_left_driving_id,
         DriveConstants.front_left_turning_id,
@@ -43,10 +46,10 @@ class SwerveDriveSubsystem(Subsystem):
         DriveConstants.back_right_angular_offset,
     )
 
-    vision_subsystem: VisionSubsystem
+    # Define the gyro. The ID is defined in constants.py
+    gyro = Pigeon2(CANConstants.pigeon_id)
 
-    gyro = Pigeon2(0)
-
+    # Define the odometry. The kinematics and initial pose are defined in constants.py
     odometry = SwerveDrive4PoseEstimator(
         DriveConstants.drive_kinematics,
         gyro.getRotation2d(),
@@ -59,27 +62,15 @@ class SwerveDriveSubsystem(Subsystem):
         Pose2d(),
     )
 
-    slow_mode = False
-
-    x_pid_controller = AutoConstants.x_pid_controller
-    y_pid_controller = AutoConstants.y_pid_controller
-    theta_pid_controller = AutoConstants.theta_pid_controller
-
-    x_timer = None
-
-    # The parametric value used for orbiting the hub
-    t: float = 0
-
-    orbiting = False
-
     def __init__(self, vision_subsystem: VisionSubsystem):
         # Initialize the state machine
         super().__init__()
 
+        # Store the vision subsystem and initialize the x timer to None
         self.vision_subsystem = vision_subsystem
+        self.x_timer = None
 
-        robot_config: RobotConfig
-
+        # Try to create the robot config from the GUI settings and configure the auto builder with the appropriate functions and constants. If there is an error, report it to the driver station.
         try:
             robot_config = RobotConfig.fromGUISettings()
 
@@ -94,8 +85,7 @@ class SwerveDriveSubsystem(Subsystem):
                     PIDConstants(13.50, 5.6, 1.9), PIDConstants(9.75, 1.6, 0.6)
                 ),
                 robot_config,
-                lambda: DriverStation.getAlliance()
-                == DriverStation.Alliance.kRed,
+                lambda: DriverStation.getAlliance() == DriverStation.Alliance.kRed,
                 self,
             )
         except Exception as e:
@@ -105,11 +95,7 @@ class SwerveDriveSubsystem(Subsystem):
         # Run internal periodic functions
         super().periodic()
 
-        # if DriverStation.isEnabled():
-        robot_pose = self.get_pose()
-        SmartDashboard.putNumber("Red Hub Dist", ((robot_pose.X() - (11.84))**2 + (robot_pose.Y() - 4.035)**2) ** 0.5)
-        SmartDashboard.putNumber("Blue Hub Dist", ((robot_pose.X() - (4.606))**2 + (robot_pose.Y() - 4.035)**2) ** 0.5)
-
+        # Update odometry with the latest gyro and module positions.
         self.odometry.update(
             self.gyro.getRotation2d(),
             [
@@ -120,29 +106,36 @@ class SwerveDriveSubsystem(Subsystem):
             ],
         )
 
+        # If the vision subsystem has a valid pose estimate, update the odometry with that as well
         if self.vision_subsystem.robot_pose != None:
             robot_pose = self.vision_subsystem.robot_pose
             self.odometry.addVisionMeasurement(
                 robot_pose.estimatedPose.toPose2d(), robot_pose.timestampSeconds
             )
 
-    def get_hub_dist(self): 
+    def get_hub_dist(self):
+        """Returns the distance from the robot to the hub in meters. The hub position is defined based on the alliance color in the field coordinate system."""
         if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
             hub_x = 11.84
             hub_y = 4.035
-        else: 
+        else:
             hub_x = 4.606
             hub_y = 4.035
-        
-        return ((self.get_pose().X() - hub_x)**2 + (self.get_pose().Y() - hub_y)**2) ** 0.5
+
+        return (
+            (self.get_pose().X() - hub_x) ** 2 + (self.get_pose().Y() - hub_y) ** 2
+        ) ** 0.5
 
     def get_pose(self) -> Pose2d:
+        """Returns the current estimated pose of the robot."""
         return self.odometry.getEstimatedPosition()
 
     def reset_pose(self, new_pose: Pose2d):
+        """Resets the robot's pose to the given pose."""
         self.odometry.resetPose(new_pose)
 
     def reset_odometry(self, pose: Pose2d):
+        """Resets the robot's odometry to the given pose. This should be used when the robot's position on the field is known with certainty, such as at the start of a match or after being picked up by the field staff."""
         self.odometry.resetPosition(
             self.gyro.getRotation2d(),
             [
@@ -155,6 +148,7 @@ class SwerveDriveSubsystem(Subsystem):
         )
 
     def set_module_states(self, desired_states: List[SwerveModuleState]):
+        """Sets the desired states for all four swerve modules. The states are desaturated to ensure that the wheel speeds do not exceed the maximum speed."""
         SwerveDrive4Kinematics.desaturateWheelSpeeds(
             desired_states, DriveConstants.max_speed_meters_per_second
         )
@@ -163,35 +157,48 @@ class SwerveDriveSubsystem(Subsystem):
         self.back_left.setDesiredState(desired_states[2])
         self.back_right.setDesiredState(desired_states[3])
 
-    def drive(self, x_speed: float, y_speed: float, rot: float, field_relative: bool):
+    def drive(
+        self,
+        x_speed: float,
+        y_speed: float,
+        rot: float,
+        field_relative: bool,
+        slow_mode: bool = False,
+    ):
+        # Calculate the speeds to deliver to the modules based on the input speeds, the maximum speed defined in constants.py, whether slow mode is active, and whether the gyro is reversed. If field relative is true, the speeds are converted from field relative to robot relative using the current gyro angle.
         x_speed_delivered = (
             x_speed
             * DriveConstants.max_speed_meters_per_second
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (DriveConstants.slow_mode_speed_percentage if slow_mode else 1.0)
             * (-1.0 if DriveConstants.gyro_reversed else 1.0)
         )
         y_speed_delivered = (
             y_speed
             * DriveConstants.max_speed_meters_per_second
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (DriveConstants.slow_mode_speed_percentage if slow_mode else 1.0)
             * (-1.0 if DriveConstants.gyro_reversed else 1.0)
         )
         rot_delivered = (
             rot
             * DriveConstants.max_angular_speed
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
+            * (DriveConstants.slow_mode_speed_percentage if slow_mode else 1.0)
             * (-1.0 if DriveConstants.gyro_reversed else 1.0)
         )
 
+        # If all speeds are zero, start the x timer if it hasn't been started already. If the x timer has been running for longer than the duration defined in constants.py, set the modules to an X formation to prevent movement. If any speed is not zero, reset the x timer.
         if x_speed_delivered == 0 and y_speed_delivered == 0 and rot_delivered == 0:
             if self.x_timer is None:
-              self.x_timer = wpilib.Timer.getFPGATimestamp()
-            if wpilib.Timer.getFPGATimestamp() - self.x_timer > DriveConstants.x_duration:
+                self.x_timer = wpilib.Timer.getFPGATimestamp()
+            if (
+                wpilib.Timer.getFPGATimestamp() - self.x_timer
+                > DriveConstants.x_duration
+            ):
                 self.set_x()
             return
 
         self.x_timer = None
 
+        # Convert the desired chassis speeds to individual module states and set the modules to those states.
         swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
             ChassisSpeeds.fromFieldRelativeSpeeds(
                 x_speed_delivered,
@@ -204,15 +211,67 @@ class SwerveDriveSubsystem(Subsystem):
         )
         self.set_module_states(swerve_module_states)
 
+    def drive_hub_relative(self, x_speed: float,
+        y_speed: float,
+        slow_mode: bool = False,):
+
+        # Calculate the speeds to deliver to the modules based on the input speeds, the maximum speed defined in constants.py, whether slow mode is active, and whether the gyro is reversed. The speeds are converted from field relative to robot relative using the current gyro angle and the angle to the hub.
+        x_speed_delivered = (
+            x_speed
+            * DriveConstants.max_speed_meters_per_second
+            * (DriveConstants.slow_mode_speed_percentage if slow_mode else 1.0)
+            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
+        )
+        y_speed_delivered = (
+            y_speed
+            * DriveConstants.max_speed_meters_per_second
+            * (DriveConstants.slow_mode_speed_percentage if slow_mode else 1.0)
+            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
+        )
+
+        # Define the hub position based on the alliance color in the field coordinate system.
+        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+            hub_x = 11.84
+            hub_y = 4.035
+        else:
+            hub_x = 4.606
+            hub_y = 4.035
+
+        # Calculate the angle to the hub from the robot's current position and create a PID controller to rotate towards that angle. The PID controller is configured with the constraints defined in constants.py and a proportional gain of 3.0, which was determined through testing to provide good responsiveness without excessive overshoot.
+        robot_pose = self.get_pose()
+        angle_to_hub = arctan(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
+
+        theta_pid_controller = ProfiledPIDControllerRadians(
+            3.0, 0.0, 0.0, AutoConstants.theta_pid_controller.constraints
+        )
+        theta_pid_controller.setGoal(angle_to_hub)
+
+        theta_pid_output = theta_pid_controller.calculate(
+            robot_pose.rotation().radians()
+        )
+
+        # Convert the desired chassis speeds to individual module states and set the modules to those states.
+        swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                x_speed_delivered,
+                y_speed_delivered,
+                theta_pid_output,
+                Rotation2d(angle_to_hub),
+            )
+        )
+        self.set_module_states(swerve_module_states)
+
     def drive_robot_relative(
         self, speeds: ChassisSpeeds, feedforwards: DriveFeedforwards
     ):
+        # Convert the desired chassis speeds to individual module states and set the modules to those states. The feedforwards are currently not used, but could be implemented in the future for more accurate control.
         swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
             speeds
         )
         self.set_module_states(swerve_module_states)
 
     def get_robot_relative_speeds(self) -> ChassisSpeeds:
+        # Get the current module states and convert them to robot relative chassis speeds using the kinematics.
         module_states = self.get_module_states()
         robot_relative_speeds = DriveConstants.drive_kinematics.toChassisSpeeds(
             module_states
@@ -220,6 +279,7 @@ class SwerveDriveSubsystem(Subsystem):
         return robot_relative_speeds
 
     def set_x(self):
+        # Set the modules to an X formation to prevent movement when the robot is disabled or when the input speeds are zero for an extended period of time.
         self.front_left.setDesiredState(
             SwerveModuleState(0, Rotation2d.fromDegrees(45))
         )
@@ -234,6 +294,7 @@ class SwerveDriveSubsystem(Subsystem):
         )
 
     def get_module_states(self) -> List[SwerveModuleState]:
+        # Get the current states of all four swerve modules and return them as a list.
         return [
             self.front_left.getState(),
             self.front_right.getState(),
@@ -242,23 +303,14 @@ class SwerveDriveSubsystem(Subsystem):
         ]
 
     def reset_encoders(self):
+        # Reset the encoders on all four swerve modules. This should be used when the robot's position on the field is known with certainty, such as at the start of a match or after being picked up by the field staff.
         self.front_left.reset_encoders()
         self.back_left.reset_encoders()
         self.front_right.reset_encoders()
         self.back_right.reset_encoders()
 
-    def get_parametric_position(self) -> List[float]:
-        return [
-            182.11
-            + ShooterConstants.optimal_shooter_distance
-            * cos(5 * pi / 6 * self.t + 7 * pi / 12),
-            317.69 / 2
-            + ShooterConstants.optimal_shooter_distance
-            * sin(5 * pi / 6 * self.t + 7 * pi / 12),
-            5 * pi / 6 * self.t + 7 * pi / 12,
-        ]
-    
     def apply_deadband(self, value: float, deadband: float) -> float:
+        """Applies a deadband to the given value. If the absolute value of the input is less than the deadband, returns 0. Otherwise, scales the input so that it starts from 0 at the edge of the deadband and reaches 1 at the maximum input."""
         if abs(value) < deadband:
             return 0.0
         else:
@@ -267,114 +319,31 @@ class SwerveDriveSubsystem(Subsystem):
     def default_drive(
         self, driver_controller: CommandXboxController, field_relative: bool
     ):
+        """Default drive function that can be used as the default command for the swerve drive subsystem. Takes input from the given Xbox controller and drives the robot accordingly. The left stick controls translation, while the right stick controls rotation. If the right bumper is held, the robot will drive hub relative instead of field relative. If the left trigger is held beyond 0.2, slow mode will be activated, which reduces the maximum speed for more precise control."""
         if DriverStation.isDisabled():
             return False
 
-        self.drive(
-            -self.apply_deadband(driver_controller.getLeftY(), 0.1),
-            -self.apply_deadband(driver_controller.getLeftX(), 0.1),
-            -self.apply_deadband(driver_controller.getRightX(), 0.1),
-            field_relative,
-        )
-        return False
-    
-    def point_towards_hub(self, driver_controller: CommandXboxController): 
-        x_speed_delivered = (
-            -self.apply_deadband(driver_controller.getLeftY(), 0.1)
-            * DriveConstants.max_speed_meters_per_second
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
-            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
-        )
-        y_speed_delivered = (
-            -self.apply_deadband(driver_controller.getLeftX(), 0.1)
-            * DriveConstants.max_speed_meters_per_second
-            * (DriveConstants.slow_mode_speed_percentage if self.slow_mode else 1.0)
-            * (-1.0 if DriveConstants.gyro_reversed else 1.0)
-        )
-
-        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
-            hub_x = 11.84
-            hub_y = 4.035 
-        else:
-            hub_x = 4.606
-            hub_y = 4.035
-
-        robot_pose = self.get_pose()
-        angle_to_hub = arctan(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
-
-        theta_pid_controller = ProfiledPIDControllerRadians(3.0, 0.0, 0.0, AutoConstants.theta_pid_controller.constraints)
-        theta_pid_controller.setGoal(angle_to_hub)
-
-        theta_pid_output = theta_pid_controller.calculate(robot_pose.rotation().radians())
-
-        swerve_module_states = DriveConstants.drive_kinematics.toSwerveModuleStates(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                x_speed_delivered,
-                y_speed_delivered,
-                theta_pid_output,
-                Rotation2d(angle_to_hub),
+        if driver_controller.rightBumper().getAsBoolean():
+            self.drive_hub_relative(
+                x_speed=-self.apply_deadband(driver_controller.getLeftY(), 0.1),
+                y_speed=-self.apply_deadband(driver_controller.getLeftX(), 0.1),
+                slow_mode=driver_controller.leftTrigger(0.2).getAsBoolean(),
             )
+        else: 
+            self.drive(
+                x_speed=-self.apply_deadband(driver_controller.getLeftY(), 0.1),
+                y_speed=-self.apply_deadband(driver_controller.getLeftX(), 0.1),
+                rot=-self.apply_deadband(driver_controller.getRightX(), 0.1),
+                field_relative=field_relative,
+                slow_mode=driver_controller.leftTrigger(0.2).getAsBoolean(),
         )
-
-        self.set_module_states(swerve_module_states)
-        return abs(theta_pid_controller.getPositionError()) < 0.05            
-
-    def pre_orbit(self):
-        # NEED TO IMPLEMENT T CALCULATION
-        self.orbiting = True
-        return True
-
-    def orbit_hub(self, driver_controller: CommandXboxController):
-        self.t = min(max(self.t + driver_controller.getLeftX(), 0.0), 1.0)
-
-        alliance = DriverStation.getAlliance()
-
-        if alliance == None:
-            return True
-
-        target_position = self.get_parametric_position()
-
-        if alliance == DriverStation.Alliance.kBlue:
-            target_position[0] = 651.22 - target_position[0]
-            target_position[2] = pi - target_position[2]
-
-        target_position[0] *= 0.0254
-        target_position[1] *= 0.0254
-
-        self.x_pid_controller.setGoal(target_position[0])
-        self.y_pid_controller.setGoal(target_position[1])
-        self.theta_pid_controller.setGoal(target_position[2])
-
-        x_pid_output = self.x_pid_controller.calculate(
-            self.get_pose().X(), target_position[0]
-        )
-        y_pid_output = self.y_pid_controller.calculate(
-            self.get_pose().Y(), target_position[1]
-        )
-        theta_pid_output = self.theta_pid_controller.calculate(
-            self.get_pose().rotation().radians(), target_position[2]
-        )
-
-        self.drive(x_pid_output, y_pid_output, theta_pid_output, True)
-        return not self.orbiting
-
-    def stop_orbiting(self):
-        self.orbiting = False
-        return True
-
-    def enable_slow_mode(self):
-        self.slow_mode = True
-        return True
-
-    def disable_slow_mode(self):
-        self.slow_mode = False
-        return True
 
     def zero_heading(self):
+        """Resets the gyro heading to zero. This should be used when the robot's orientation is known with certainty, such as at the start of a match or after being picked up by the field staff."""
         self.gyro.reset()
-        return True
 
     def smart_zero_heading(self):
+        """Resets the gyro heading to zero based on the alliance color and the current estimated pose."""
         alliance = DriverStation.getAlliance()
 
         if alliance != None:
@@ -384,5 +353,3 @@ class SwerveDriveSubsystem(Subsystem):
             )
         else:
             wpilib.reportError("Couldn't get alliance!")
-
-        return True

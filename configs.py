@@ -4,16 +4,6 @@ from constants import ModuleConstants
 
 from math import pi
 
-neo_config = SparkMaxConfig()
-
-neo_config.setIdleMode(SparkBaseConfig.IdleMode.kCoast).smartCurrentLimit(10)
-neo_config.closedLoop.setFeedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(
-    0.0, 0.0, 0.0
-).velocityFF(0.00045).outputRange(-1, 1)
-neo_config.closedLoop.maxMotion.maxVelocity(700).maxAcceleration(
-    1800
-).allowedClosedLoopError(0.01)
-
 driving_config = SparkMaxConfig()
 turning_config = SparkMaxConfig()
 
@@ -30,9 +20,6 @@ driving_config.encoder.positionConversionFactor(
 driving_config.closedLoop.setFeedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(
     0.08, 0.0, 0.0
 ).velocityFF(driving_velocity_feed_forward).outputRange(-1.0, 1.0)
-# driving_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
-#     20
-# ).allowedClosedLoopError(0.01)
 
 turning_config.setIdleMode(SparkMaxConfig.IdleMode.kBrake).smartCurrentLimit(20)
 turning_config.absoluteEncoder.inverted(True).positionConversionFactor(
@@ -43,6 +30,3 @@ turning_config.closedLoop.setFeedbackSensor(FeedbackSensor.kAbsoluteEncoder).pid
 ).outputRange(-1.0, 1.0).positionWrappingEnabled(True).positionWrappingInputRange(
     0, turning_factor
 )
-# turning_config.closedLoop.maxMotion.maxVelocity(10).maxAcceleration(
-#     20
-# ).allowedClosedLoopError(0.01)

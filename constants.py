@@ -8,13 +8,14 @@ from math import pi
 
 
 class CANConstants:
-    intake_motor: int = 7
-    right_intake: int = 1
-    left_intake: int = 2
-    conveyor_motor: int = 5
+    pigeon_id: int = 0
+    right_intake_motor: int = 1
+    left_intake_motor: int = 2
     upper_roller_motor: int = 3
     lower_roller_motor: int = 4
+    conveyor_motor: int = 5
     trigger_motor: int = 6
+    intake_motor: int = 7
 
 
 class ShooterConstants:
@@ -65,7 +66,6 @@ class DriveConstants:
     gyro_reversed = False
 
     x_duration = 0.25
-
 
 
 class ModuleConstants:

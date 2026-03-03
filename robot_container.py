@@ -57,18 +57,29 @@ class RobotContainer:
     #     self.shooter_subsystem.queue_state("disable_shooter")
 
     def configure_named_commands(self):
-        NamedCommands.registerCommand("toggle_intake", 
-            InstantCommand(lambda: self.hopper_subsystem.queue_states(
-                "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
-        )))
-        NamedCommands.registerCommand("shoot", 
-            InstantCommand(lambda: self.shooter_subsystem.queue_states(
-                "init_shooter", "ensure_velocity", "advance_balls"
-        )))
+        NamedCommands.registerCommand(
+            "toggle_intake",
+            InstantCommand(
+                lambda: self.hopper_subsystem.queue_states(
+                    "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
+                )
+            ),
+        )
+        NamedCommands.registerCommand(
+            "shoot",
+            InstantCommand(
+                lambda: self.shooter_subsystem.queue_states(
+                    "init_shooter", "ensure_velocity", "advance_balls"
+                )
+            ),
+        )
 
     def set_controller_bindings(self):
         self.robot_drive.setDefaultCommand(
-            RunCommand(lambda: self.robot_drive.default_drive(self.driver_controller, True), self.robot_drive)
+            RunCommand(
+                lambda: self.robot_drive.default_drive(self.driver_controller, True),
+                self.robot_drive,
+            )
         )
 
         self.driver_controller.leftBumper().onTrue(
@@ -76,23 +87,28 @@ class RobotContainer:
         )
 
         self.driver_controller.rightBumper().whileTrue(
-            RunCommand(lambda: self.robot_drive.point_towards_hub(self.driver_controller), self.robot_drive)
+            RunCommand(
+                lambda: self.robot_drive.point_towards_hub(self.driver_controller),
+                self.robot_drive,
+            )
         )
 
         self.driver_controller.povRight().onTrue(
-            InstantCommand(lambda: self.hopper_subsystem.queue_states(
-                "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
-            ))
+            InstantCommand(
+                lambda: self.hopper_subsystem.queue_states(
+                    "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
+                )
+            )
         )
-        
+
         self.driver_controller.rightTrigger().onTrue(
-            InstantCommand(lambda: self.shooter_subsystem.queue_states(
-                "shoot"
-            ))
+            InstantCommand(lambda: self.shooter_subsystem.queue_states("shoot"))
         )
 
         self.driver_controller.rightTrigger().onFalse(
-            InstantCommand(lambda: self.shooter_subsystem.queue_state("disable_shooter", 0))
+            InstantCommand(
+                lambda: self.shooter_subsystem.queue_state("disable_shooter", 0)
+            )
         )
 
     def get_autonomous_command(self):

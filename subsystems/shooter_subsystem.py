@@ -88,40 +88,26 @@ class ShooterSubsytem(StateSystem):
     @state
     def advance_balls(self):
         self.trigger_motor.set_control(VelocityVoltage(-90))
-        self.conveyor_motor.set_control(
-            VelocityVoltage(
-                -90
-            )
-        )
+        self.conveyor_motor.set_control(VelocityVoltage(-90))
         return True
 
     @state
     def shoot(self):
         target_rps = self.get_shooter_rps_from_dist(self.robot_drive.get_hub_dist())
 
-        self.upper_roller_motor.set_control(
-            VelocityVoltage(
-                target_rps
-            )
-        )
-        self.lower_roller_motor.set_control(
-            VelocityVoltage(
-                -target_rps
-            )
-        )
+        self.upper_roller_motor.set_control(VelocityVoltage(target_rps))
+        self.lower_roller_motor.set_control(VelocityVoltage(-target_rps))
 
-        if not (abs(self.upper_roller_motor.get_velocity().value_as_double - target_rps)
+        if not (
+            abs(self.upper_roller_motor.get_velocity().value_as_double - target_rps)
             < ShooterConstants.minimum_acceptable_closed_loop_error
             and abs(self.lower_roller_motor.get_velocity().value_as_double - target_rps)
-            < ShooterConstants.minimum_acceptable_closed_loop_error):
+            < ShooterConstants.minimum_acceptable_closed_loop_error
+        ):
             return False
-        
+
         self.trigger_motor.set_control(VelocityVoltage(-90))
-        self.conveyor_motor.set_control(
-            VelocityVoltage(
-                -90
-            )
-        )
+        self.conveyor_motor.set_control(VelocityVoltage(-90))
 
         return False
 

@@ -7,8 +7,8 @@ from simple_state_system import *
 
 
 class HopperSubsystem(StateSystem):
-    left_intake = TalonFXS(CANConstants.left_intake)
-    right_intake = TalonFXS(CANConstants.right_intake)
+    left_intake = TalonFXS(CANConstants.left_intake_motor)
+    right_intake = TalonFXS(CANConstants.right_intake_motor)
     intake_motor = TalonFX(CANConstants.intake_motor)
 
     hopper_toggle = False
@@ -33,7 +33,7 @@ class HopperSubsystem(StateSystem):
         motion_magic_configs.motion_magic_cruise_velocity = 1600
         motion_magic_configs.motion_magic_acceleration = 2400
         motion_magic_configs.motion_magic_jerk = 3600
-        
+
         limit_configs.stator_current_limit_enable = True
         limit_configs.stator_current_limit = 15
 
