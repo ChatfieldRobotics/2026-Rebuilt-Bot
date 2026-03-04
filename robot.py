@@ -1,6 +1,6 @@
 from robot_container import RobotContainer
 from commands2 import Command, CommandScheduler
-from wpilib import DriverStation
+from wpilib import DriverStation, RobotController
 from wpilib import SmartDashboard, Field2d
 
 import wpilib
@@ -13,6 +13,7 @@ class Robot(wpilib.TimedRobot):
 
     def robotInit(self):
         SmartDashboard.putData("Field", self.field)
+        RobotController.setBrownoutVoltage(7.0)
 
     def robotPeriodic(self):
         self.field.setRobotPose(self.robot_container.robot_drive.get_pose())

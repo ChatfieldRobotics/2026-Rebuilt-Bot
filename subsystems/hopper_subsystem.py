@@ -18,6 +18,7 @@ class HopperSubsystem(StateSystem):
 
     target_hopper_position = 0.0
     hopper_toggle = False
+    roller_toggle = False
 
     def __init__(self):
         # Initialize the state machine
@@ -51,6 +52,7 @@ class HopperSubsystem(StateSystem):
         """Toggles the hopper between its extended and retracted positions. When toggled, it will move the hopper to the target position and then set the intake motor speed accordingly.
         """
         self.hopper_toggle = not self.hopper_toggle
+        self.roller_toggle = self.hopper_toggle
 
         if self.hopper_toggle:
             self.target_hopper_position = HopperConstants.extended_position
@@ -68,11 +70,20 @@ class HopperSubsystem(StateSystem):
             self.right_intake_motor.set(0.0)
 
         return True
+    
+    def toggle_intake_roller(self):
+        self.roller_toggle = not self.roller_toggle 
+
+        if self.roller_toggle:
+            self.right_intake_motor.set(HopperConstants.intake_speed)
+        else:
+            self.right_intake_motor.set(0.0)
 
     @state
     def outtake(self):
         """Sets the intake motor to outtake speed, which is defined in constants.py. This can be used to eject balls from the hopper."""
         self.hopper_toggle = True
+        self.roller_toggle = self.hopper_toggle
         self.target_hopper_position = HopperConstants.extended_position
 
         self.left_intake.set_control(MotionMagicVoltage(self.target_hopper_position))
@@ -81,6 +92,11 @@ class HopperSubsystem(StateSystem):
         self.wait_for_hopper_position(self.target_hopper_position)
 
         self.right_intake_motor.set(-HopperConstants.intake_speed)
+
+        return True
+    
+    def start_intake_rollers(self):
+        self.right_intake_motor.set(HopperConstants.intake_speed)
 
     def stop_intake_rollers(self):
         self.right_intake_motor.set(0.0)

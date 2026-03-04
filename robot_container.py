@@ -19,8 +19,8 @@ class RobotContainer:
     def __init__(self):
         self.vision_subsystem = VisionSubsystem("APTCam")
         self.robot_drive = SwerveDriveSubsystem(self.vision_subsystem)
-        self.hopper_subsystem = HopperSubsystem()
         self.shooter_subsystem = ShooterSubsytem(self.robot_drive)
+        self.hopper_subsystem = HopperSubsystem()
 
         self.set_controller_bindings()
         self.configure_named_commands()
@@ -38,17 +38,13 @@ class RobotContainer:
         NamedCommands.registerCommand(
             "toggle_intake",
             InstantCommand(
-                lambda: self.hopper_subsystem.queue_states(
-                    "toggle_hopper_position", "ensure_position", "toggle_intake_speed"
-                )
+                lambda: self.hopper_subsystem.queue_state("toggle_hopper")
             ),
         )
         NamedCommands.registerCommand(
             "shoot",
             InstantCommand(
-                lambda: self.shooter_subsystem.queue_states(
-                    "init_shooter", "ensure_velocity", "advance_balls"
-                )
+                lambda: self.shooter_subsystem.queue_state("shoot")
             ),
         )
 
@@ -72,18 +68,24 @@ class RobotContainer:
         
         self.driver_controller.a().onTrue(
             InstantCommand(
-                lambda: self.hopper_subsystem.outtake()
+                lambda: [self.hopper_subsystem.queue_state("outtake", 0), self.shooter_subsystem.outtake()]
+            )
+        )
+
+        self.driver_controller.a().onFalse(
+            InstantCommand(
+                lambda: [self.hopper_subsystem.stop_intake_rollers(), self.shooter_subsystem.queue_state("disable_shooter", 0)]
             )
         )
 
         self.driver_controller.b().onTrue(
             InstantCommand(
-                lambda: self.hopper_subsystem.stop_intake_rollers()
+                lambda: self.hopper_subsystem.toggle_intake_roller()
             )
         )
 
         self.driver_controller.rightTrigger().onTrue(
-            InstantCommand(lambda: self.shooter_subsystem.queue_states("shoot"))
+            InstantCommand(lambda: [self.shooter_subsystem.queue_states("shoot"), self.hopper_subsystem.start_intake_rollers()])
         )
 
         self.driver_controller.rightTrigger().onFalse(

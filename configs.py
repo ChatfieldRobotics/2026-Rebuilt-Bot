@@ -74,7 +74,8 @@ class ShooterConfigs:
     intake_slot0 = roller_config.slot0
 
     intake_slot0.k_s = 0.18
-    intake_slot0.k_v = 0.123
-    intake_slot0.k_p = 0.4
+    intake_slot0.k_v = 0.126
+    intake_slot0.k_p = 0.3
+    intake_slot0.k_i = 0.3
     intake_slot0.k_d = 0.006
 

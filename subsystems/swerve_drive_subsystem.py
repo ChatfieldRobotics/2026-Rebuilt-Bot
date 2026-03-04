@@ -9,6 +9,7 @@ from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants
 from pathplannerlib.util import DriveFeedforwards
 from phoenix6.hardware import Pigeon2
+import robot
 from simple_state_system import *
 from subsystems.swerve_module_subsystem import SwerveModuleSubsystem
 from subsystems.vision_subsystem import VisionSubsystem
@@ -69,6 +70,12 @@ class SwerveDriveSubsystem(Subsystem):
         # Store the vision subsystem and initialize the x timer to None
         self.vision_subsystem = vision_subsystem
         self.x_timer = None
+
+        # Create a PID controller for rotating towards the hub in the drive_hub_relative function. The constraints are defined in constants.py and the proportional gain was determined through testing to provide good responsiveness without excessive overshoot.
+        self.theta_pid_controller = ProfiledPIDControllerRadians(
+            0.7, 0.1, 0.0, AutoConstants.theta_pid_controller.getConstraints()
+        )
+        self.theta_pid_controller.enableContinuousInput(-pi, pi)
 
         # Try to create the robot config from the GUI settings and configure the auto builder with the appropriate functions and constants. If there is an error, report it to the driver station.
         try:
@@ -244,15 +251,10 @@ class SwerveDriveSubsystem(Subsystem):
         robot_pose = self.get_pose()
         angle_to_hub = -atan2(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
 
-        theta_pid_controller = ProfiledPIDControllerRadians(
-            0.1, 0.0, 0.0, AutoConstants.theta_pid_controller.getConstraints()
+        theta_pid_output = self.theta_pid_controller.calculate(
+            robot_pose.rotation().radians(),
+            pi - angle_to_hub
         )
-
-        theta_pid_controller.setGoal(((pi - angle_to_hub) % (2 * pi)))
-
-        theta_pid_output = theta_pid_controller.calculate((robot_pose.rotation().radians() % (2 * pi)))
-
-        print(theta_pid_output,((pi - angle_to_hub) % (2 * pi)), (robot_pose.rotation().radians() % (2 * pi)))
 
         rot_delivered = (
             theta_pid_output
@@ -266,7 +268,7 @@ class SwerveDriveSubsystem(Subsystem):
                 x_speed_delivered,
                 y_speed_delivered,
                 rot_delivered,
-                Rotation2d(angle_to_hub)
+                self.gyro.getRotation2d()
             )
         )
         self.set_module_states(swerve_module_states)
@@ -333,11 +335,11 @@ class SwerveDriveSubsystem(Subsystem):
         if DriverStation.isDisabled():
             return False
 
-        if driver_controller.povLeft().getAsBoolean():
+        if driver_controller.leftTrigger().getAsBoolean():
             self.drive_hub_relative(
                 x_speed=-self.apply_deadband(driver_controller.getLeftY(), OIConstants.drive_deadband),
                 y_speed=-self.apply_deadband(driver_controller.getLeftX(), OIConstants.drive_deadband),
-                slow_mode=driver_controller.leftTrigger(0.2).getAsBoolean(),
+                slow_mode=driver_controller.rightBumper().getAsBoolean(),
             )
         else: 
             self.drive(
@@ -345,7 +347,7 @@ class SwerveDriveSubsystem(Subsystem):
                 y_speed=-self.apply_deadband(driver_controller.getLeftX(), OIConstants.drive_deadband),
                 rot=-self.apply_deadband(driver_controller.getRightX(), OIConstants.drive_deadband),
                 field_relative=field_relative,
-                slow_mode=driver_controller.leftTrigger(0.2).getAsBoolean(),
+                slow_mode=driver_controller.rightBumper().getAsBoolean(),
         )
 
     def zero_heading(self):

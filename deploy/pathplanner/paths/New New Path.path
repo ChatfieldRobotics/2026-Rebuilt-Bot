@@ -3,63 +3,59 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.255288888888889,
-        "y": 7.494277777777777
+        "x": 4.5307275320970035,
+        "y": 0.6644793152639101
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.282074516975693,
-        "y": 7.285419862269459
+        "x": 5.514065620542082,
+        "y": 0.8068045649072781
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.623067047075606,
-        "y": 7.094992867332382
+        "x": 7.3513552068473595,
+        "y": 1.1690870185449365
       },
       "prevControl": {
-        "x": 6.949611692869527,
-        "y": 7.443331843645872
+        "x": 6.850440314480969,
+        "y": 0.5329709465823739
       },
       "nextControl": {
-        "x": 7.998288159771754,
-        "y": 6.900912981455065
+        "x": 7.8496050242645845,
+        "y": 1.801818689217012
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.841244444444444,
-        "y": 4.142188888888889
+        "x": 7.4678031383737515,
+        "y": 3.52392296718973
       },
       "prevControl": {
-        "x": 8.244122681883024,
-        "y": 5.400028530670471
+        "x": 7.480564441336796,
+        "y": 2.7355682188202746
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Example Path End Point"
+      "linkedName": "Right End"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.05,
-      "rotationDegrees": 0.0
-    },
-    {
-      "waypointRelativePos": 0.8,
-      "rotationDegrees": -63.59150805287757
+      "waypointRelativePos": 1.046854082998655,
+      "rotationDegrees": 90.0
     }
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "StartIntake",
-      "waypointRelativePos": 0.2567713976164741,
+      "name": "toggle_intake",
+      "waypointRelativePos": 0.36944745395448203,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -79,10 +75,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -75.19309207995204
+    "rotation": 90.0
   },
   "reversed": false,
-  "folder": "Left Auto",
+  "folder": "Right Auto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

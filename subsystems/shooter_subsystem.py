@@ -39,7 +39,7 @@ class ShooterSubsytem(StateSystem):
         super().periodic()
 
     def get_shooter_rps_from_dist(self, dist: float) -> float:
-        return 8.5 * dist**2 - 40.35 * dist + 79.575
+        return 8.5 * dist**2 - 40.35 * dist + 79.875
 
     @state
     def start_conveyor(self):
@@ -89,15 +89,21 @@ class ShooterSubsytem(StateSystem):
         if not (
             abs(self.upper_roller_motor.get_velocity().value_as_double - target_rps)
             < ShooterConstants.minimum_acceptable_closed_loop_error
-            and abs(self.lower_roller_motor.get_velocity().value_as_double - target_rps)
+            and abs(self.lower_roller_motor.get_velocity().value_as_double + target_rps)
             < ShooterConstants.minimum_acceptable_closed_loop_error
         ):
             return False
 
+        self.set_intake_roller_speed()
+
+        return False
+    
+    def set_intake_roller_speed(self):
         self.trigger_motor.set_control(VelocityVoltage(ShooterConstants.advancement_motor_rps))
         self.conveyor_motor.set_control(VelocityVoltage(ShooterConstants.conveyor_motor_rps))
 
-        return False
+    def outtake(self):
+        self.conveyor_motor.set_control(VelocityVoltage(-ShooterConstants.conveyor_motor_rps))
 
     @state
     def disable_shooter(self):
