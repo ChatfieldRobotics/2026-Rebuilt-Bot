@@ -189,6 +189,9 @@ class SwerveDriveSubsystem(Subsystem):
         if x_speed_delivered == 0 and y_speed_delivered == 0 and rot_delivered == 0:
             if self.x_timer is None:
                 self.x_timer = wpilib.Timer.getFPGATimestamp()
+                self.set_module_states(DriveConstants.drive_kinematics.toSwerveModuleStates(
+                    ChassisSpeeds(0,0,0)
+                ))
             if (
                 wpilib.Timer.getFPGATimestamp() - self.x_timer
                 > DriveConstants.x_duration
@@ -242,12 +245,19 @@ class SwerveDriveSubsystem(Subsystem):
         angle_to_hub = -atan2(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
 
         theta_pid_controller = ProfiledPIDControllerRadians(
-            3.0, 0.0, 0.0, AutoConstants.theta_pid_controller.getConstraints()
+            0.1, 0.0, 0.0, AutoConstants.theta_pid_controller.getConstraints()
         )
-        theta_pid_controller.setGoal(angle_to_hub)
 
-        theta_pid_output = theta_pid_controller.calculate(
-            robot_pose.rotation().radians()
+        theta_pid_controller.setGoal(((pi - angle_to_hub) % (2 * pi)))
+
+        theta_pid_output = theta_pid_controller.calculate((robot_pose.rotation().radians() % (2 * pi)))
+
+        print(theta_pid_output,((pi - angle_to_hub) % (2 * pi)), (robot_pose.rotation().radians() % (2 * pi)))
+
+        rot_delivered = (
+            theta_pid_output
+            * DriveConstants.max_angular_speed
+            * (DriveConstants.slow_mode_speed_percentage if slow_mode else 1.0)
         )
 
         # Convert the desired chassis speeds to individual module states and set the modules to those states.
@@ -255,8 +265,8 @@ class SwerveDriveSubsystem(Subsystem):
             ChassisSpeeds.fromFieldRelativeSpeeds(
                 x_speed_delivered,
                 y_speed_delivered,
-                theta_pid_output,
-                Rotation2d(angle_to_hub),
+                rot_delivered,
+                Rotation2d(angle_to_hub)
             )
         )
         self.set_module_states(swerve_module_states)
