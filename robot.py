@@ -18,19 +18,6 @@ class Robot(wpilib.TimedRobot):
     def robotPeriodic(self):
         self.field.setRobotPose(self.robot_container.robot_drive.get_pose())
 
-        data = wpilib.DriverStation.getGameSpecificMessage()
-        if data:
-            if (
-                data == "R"
-                and DriverStation.getAlliance() == DriverStation.Alliance.kRed
-            ):
-                self.robot_container.active_rumble()
-            elif (
-                data == "B"
-                and DriverStation.getAlliance() == DriverStation.Alliance.kBlue
-            ):
-                self.robot_container.active_rumble()
-
         CommandScheduler.getInstance().run()
 
     def teleopInit(self):

@@ -28,12 +28,7 @@ class RobotContainer:
         self.sendable_chooser = AutoBuilder.buildAutoChooser()
 
         SmartDashboard.putData(self.sendable_chooser)
-
-    def active_rumble(self):
-        self.driver_controller.getHID().setRumble(
-            GenericHID.RumbleType.kBothRumble, 1.0
-        )
-
+        
     def configure_named_commands(self):
         NamedCommands.registerCommand(
             "toggle_intake",
