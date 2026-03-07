@@ -80,7 +80,7 @@ class RobotContainer:
         )
 
         self.driver_controller.rightTrigger().onTrue(
-            InstantCommand(lambda: [self.shooter_subsystem.queue_states("shoot"), self.hopper_subsystem.start_intake_rollers()])
+            InstantCommand(lambda: self.shooter_subsystem.queue_states("shoot"))
         )
 
         self.driver_controller.rightTrigger().onFalse(

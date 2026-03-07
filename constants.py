@@ -102,7 +102,7 @@ class HopperConstants:
 
 
 class FieldConstants:
-    red_hub_pose = Pose2d(11.74, 4.035, Rotation2d(0))
+    red_hub_pose = Pose2d(11.54, 4.035, Rotation2d(0))
     blue_hub_pose = Pose2d(4.706, 4.035, Rotation2d(0))
 
 class AutoConstants:

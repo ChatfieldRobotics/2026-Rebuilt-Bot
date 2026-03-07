@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.841244444444444,
-        "y": 4.142188888888889
+        "x": 6.898502139800283,
+        "y": 6.1245934379457925
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.09093466251717,
-        "y": 4.154630552716281
+        "x": 6.898502139800283,
+        "y": 7.1245934379457925
       },
       "isLocked": false,
       "linkedName": "Example Path End Point"
@@ -20,12 +20,12 @@
         "y": 7.392582025677603
       },
       "prevControl": {
-        "x": 6.711950911031143,
-        "y": 7.312049456393148
+        "x": 6.630513552068472,
+        "y": 7.392582025677603
       },
       "nextControl": {
-        "x": 3.7985579965129173,
-        "y": 7.5290042478998265
+        "x": 4.340513552068472,
+        "y": 7.392582025677603
       },
       "isLocked": false,
       "linkedName": null
@@ -62,12 +62,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.6546184738955704,
-      "rotationDegrees": -92.68272064815672
-    },
-    {
-      "waypointRelativePos": 0.9598393574297168,
-      "rotationDegrees": 178.7044060833462
+      "waypointRelativePos": 0.5046854082998813,
+      "rotationDegrees": 180.0
     },
     {
       "waypointRelativePos": 2.2610441767068035,
@@ -75,7 +71,18 @@
     }
   ],
   "constraintZones": [],
-  "pointTowardsZones": [],
+  "pointTowardsZones": [
+    {
+      "fieldPosition": {
+        "x": 4.706,
+        "y": 4.035
+      },
+      "rotationOffset": 180.0,
+      "minWaypointRelativePos": 2.3873239436619578,
+      "maxWaypointRelativePos": 3.0,
+      "name": "Point Towards Zone"
+    }
+  ],
   "eventMarkers": [
     {
       "name": "shoot",
@@ -116,7 +123,7 @@
   "folder": "Left Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -75.19309207995204
+    "rotation": 90.0
   },
   "useDefaultConstraints": false
 }

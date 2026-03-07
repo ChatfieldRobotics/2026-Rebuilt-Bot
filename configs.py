@@ -59,7 +59,7 @@ class HopperConfigs:
     motion_magic_configs.motion_magic_jerk = 3600
     
     limit_configs.stator_current_limit_enable = True
-    limit_configs.stator_current_limit = 15
+    limit_configs.stator_current_limit = 17.5
 
     intake_motor_config = TalonFXConfiguration()
     intake_slot0 = intake_motor_config.slot0
@@ -74,8 +74,8 @@ class ShooterConfigs:
     intake_slot0 = roller_config.slot0
 
     intake_slot0.k_s = 0.18
-    intake_slot0.k_v = 0.126
-    intake_slot0.k_p = 0.3
-    intake_slot0.k_i = 0.3
-    intake_slot0.k_d = 0.006
+    intake_slot0.k_v = 0.121
+    intake_slot0.k_p = 0.05
+    intake_slot0.k_i = 0.01
+    intake_slot0.k_d = 0.002
 

@@ -39,7 +39,7 @@ class ShooterSubsytem(StateSystem):
         super().periodic()
 
     def get_shooter_rps_from_dist(self, dist: float) -> float:
-        return 8.5 * dist**2 - 40.35 * dist + 79.875
+        return 8.5 * dist**2 - 40.35 * dist + 80.075
 
     @state
     def start_conveyor(self):
