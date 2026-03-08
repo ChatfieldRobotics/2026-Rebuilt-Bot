@@ -25,6 +25,7 @@ class Robot(wpilib.TimedRobot):
             self.autonomous_command.cancel()
 
         self.robot_container.shooter_subsystem.queue_state("disable_shooter", 0)
+        self.robot_container.robot_drive.smart_zero_heading()
 
     def autonomousInit(self):
         self.autonomous_command = self.robot_container.get_autonomous_command()

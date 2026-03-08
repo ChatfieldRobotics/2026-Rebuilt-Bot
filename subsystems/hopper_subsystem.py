@@ -7,14 +7,18 @@ from simple_state_system import *
 from time import sleep
 from commands2.button import CommandXboxController
 
+
 class HopperSubsystem(StateSystem):
     """Subsystem responsible for controlling the hopper mechanism, which includes the intake and the positioning of the hopper itself."""
+
     left_intake = TalonFXS(CANConstants.left_hopper_motor)
     right_intake = TalonFXS(CANConstants.right_hopper_motor)
     right_intake_motor = TalonFX(CANConstants.right_intake_motor)
     left_intake_motor = TalonFX(CANConstants.left_intake_motor)
 
-    intake_follower = Follower(CANConstants.right_intake_motor, MotorAlignmentValue.OPPOSED)
+    intake_follower = Follower(
+        CANConstants.right_intake_motor, MotorAlignmentValue.OPPOSED
+    )
 
     target_hopper_position = 0.0
     hopper_toggle = False
@@ -42,15 +46,16 @@ class HopperSubsystem(StateSystem):
     def wait_for_hopper_position(self, target_position: float, tolerance: float = 0.5):
         """Waits until the hopper reaches the target position within a specified tolerance."""
         while (
-            abs(self.left_intake.get_position().value_as_double - target_position) > tolerance
-            and abs(self.right_intake.get_position().value_as_double - target_position) > tolerance
+            abs(self.left_intake.get_position().value_as_double - target_position)
+            > tolerance
+            and abs(self.right_intake.get_position().value_as_double - target_position)
+            > tolerance
         ):
             sleep(0.02)
 
     @state
     def toggle_hopper(self):
-        """Toggles the hopper between its extended and retracted positions. When toggled, it will move the hopper to the target position and then set the intake motor speed accordingly.
-        """
+        """Toggles the hopper between its extended and retracted positions. When toggled, it will move the hopper to the target position and then set the intake motor speed accordingly."""
         self.hopper_toggle = not self.hopper_toggle
         self.roller_toggle = self.hopper_toggle
 
@@ -70,9 +75,9 @@ class HopperSubsystem(StateSystem):
             self.right_intake_motor.set(0.0)
 
         return True
-    
+
     def toggle_intake_roller(self):
-        self.roller_toggle = not self.roller_toggle 
+        self.roller_toggle = not self.roller_toggle
 
         if self.roller_toggle:
             self.right_intake_motor.set(HopperConstants.intake_speed)
@@ -94,7 +99,7 @@ class HopperSubsystem(StateSystem):
         self.right_intake_motor.set(-HopperConstants.intake_speed)
 
         return True
-    
+
     def start_intake_rollers(self):
         self.right_intake_motor.set(HopperConstants.intake_speed)
 

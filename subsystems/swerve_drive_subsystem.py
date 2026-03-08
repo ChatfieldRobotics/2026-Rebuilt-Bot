@@ -3,7 +3,13 @@ from typing import List
 from numpy import atan2
 import wpilib
 
-from constants import CANConstants, DriveConstants, FieldConstants, OIConstants, AutoConstants
+from constants import (
+    CANConstants,
+    DriveConstants,
+    FieldConstants,
+    OIConstants,
+    AutoConstants,
+)
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import RobotConfig, PIDConstants
@@ -196,9 +202,11 @@ class SwerveDriveSubsystem(Subsystem):
         if x_speed_delivered == 0 and y_speed_delivered == 0 and rot_delivered == 0:
             if self.x_timer is None:
                 self.x_timer = wpilib.Timer.getFPGATimestamp()
-                self.set_module_states(DriveConstants.drive_kinematics.toSwerveModuleStates(
-                    ChassisSpeeds(0,0,0)
-                ))
+                self.set_module_states(
+                    DriveConstants.drive_kinematics.toSwerveModuleStates(
+                        ChassisSpeeds(0, 0, 0)
+                    )
+                )
             if (
                 wpilib.Timer.getFPGATimestamp() - self.x_timer
                 > DriveConstants.x_duration
@@ -221,9 +229,12 @@ class SwerveDriveSubsystem(Subsystem):
         )
         self.set_module_states(swerve_module_states)
 
-    def drive_hub_relative(self, x_speed: float,
+    def drive_hub_relative(
+        self,
+        x_speed: float,
         y_speed: float,
-        slow_mode: bool = False,):
+        slow_mode: bool = False,
+    ):
 
         # Calculate the speeds to deliver to the modules based on the input speeds, the maximum speed defined in constants.py, whether slow mode is active, and whether the gyro is reversed. The speeds are converted from field relative to robot relative using the current gyro angle and the angle to the hub.
         x_speed_delivered = (
@@ -252,8 +263,7 @@ class SwerveDriveSubsystem(Subsystem):
         angle_to_hub = -atan2(hub_y - robot_pose.Y(), hub_x - robot_pose.X())
 
         theta_pid_output = self.theta_pid_controller.calculate(
-            robot_pose.rotation().radians(),
-            pi - angle_to_hub
+            robot_pose.rotation().radians(), pi - angle_to_hub
         )
 
         rot_delivered = (
@@ -268,7 +278,7 @@ class SwerveDriveSubsystem(Subsystem):
                 x_speed_delivered,
                 y_speed_delivered,
                 rot_delivered,
-                self.gyro.getRotation2d()
+                self.gyro.getRotation2d(),
             )
         )
         self.set_module_states(swerve_module_states)
@@ -337,18 +347,28 @@ class SwerveDriveSubsystem(Subsystem):
 
         if driver_controller.leftTrigger().getAsBoolean():
             self.drive_hub_relative(
-                x_speed=-self.apply_deadband(driver_controller.getLeftY(), OIConstants.drive_deadband),
-                y_speed=-self.apply_deadband(driver_controller.getLeftX(), OIConstants.drive_deadband),
+                x_speed=-self.apply_deadband(
+                    driver_controller.getLeftY(), OIConstants.drive_deadband
+                ),
+                y_speed=-self.apply_deadband(
+                    driver_controller.getLeftX(), OIConstants.drive_deadband
+                ),
                 slow_mode=driver_controller.rightBumper().getAsBoolean(),
             )
-        else: 
+        else:
             self.drive(
-                x_speed=-self.apply_deadband(driver_controller.getLeftY(), OIConstants.drive_deadband),
-                y_speed=-self.apply_deadband(driver_controller.getLeftX(), OIConstants.drive_deadband),
-                rot=-self.apply_deadband(driver_controller.getRightX(), OIConstants.drive_deadband),
+                x_speed=-self.apply_deadband(
+                    driver_controller.getLeftY(), OIConstants.drive_deadband
+                ),
+                y_speed=-self.apply_deadband(
+                    driver_controller.getLeftX(), OIConstants.drive_deadband
+                ),
+                rot=-self.apply_deadband(
+                    driver_controller.getRightX(), OIConstants.drive_deadband
+                ),
                 field_relative=field_relative,
                 slow_mode=driver_controller.rightBumper().getAsBoolean(),
-        )
+            )
 
     def zero_heading(self):
         """Resets the gyro heading to zero. This should be used when the robot's orientation is known with certainty, such as at the start of a match or after being picked up by the field staff."""

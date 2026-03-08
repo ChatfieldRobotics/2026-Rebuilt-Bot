@@ -6,12 +6,15 @@ from constants import ModuleConstants
 
 from math import pi
 
+
 class DriveConfigs:
     driving_config = SparkMaxConfig()
     turning_config = SparkMaxConfig()
 
     driving_factor = (
-        ModuleConstants.wheel_diameter_meters * pi / ModuleConstants.driving_motor_reduction
+        ModuleConstants.wheel_diameter_meters
+        * pi
+        / ModuleConstants.driving_motor_reduction
     )
     turning_factor = 2 * pi
     driving_velocity_feed_forward = 1 / ModuleConstants.drive_wheel_free_speed_rps
@@ -39,16 +42,13 @@ class DriveConfigs:
     )
 
 
-
 class HopperConfigs:
     hopper_motor_config = TalonFXSConfiguration()
     hopper_slot0 = hopper_motor_config.slot0
     motion_magic_configs = hopper_motor_config.motion_magic
     limit_configs = hopper_motor_config.current_limits
 
-    hopper_motor_config.commutation.motor_arrangement = (
-        MotorArrangementValue.MINION_JST
-    )
+    hopper_motor_config.commutation.motor_arrangement = MotorArrangementValue.MINION_JST
 
     hopper_slot0.k_p = 0.65
     hopper_slot0.k_i = 0.15
@@ -57,16 +57,23 @@ class HopperConfigs:
     motion_magic_configs.motion_magic_cruise_velocity = 1600
     motion_magic_configs.motion_magic_acceleration = 2400
     motion_magic_configs.motion_magic_jerk = 3600
-    
+
     limit_configs.stator_current_limit_enable = True
     limit_configs.stator_current_limit = 17.5
 
     intake_motor_config = TalonFXConfiguration()
     intake_slot0 = intake_motor_config.slot0
+    intake_current_limits = intake_motor_config.current_limits
 
     intake_slot0.k_p = 0.1
     intake_slot0.k_i = 0.0
     intake_slot0.k_d = 0.0
+
+    intake_current_limits.stator_current_limit_enable = True
+    intake_current_limits.supply_current_limit_enable = True
+
+    intake_current_limits.stator_current_limit = 50
+    intake_current_limits.supply_current_limit = 30
 
 
 class ShooterConfigs:
@@ -78,4 +85,3 @@ class ShooterConfigs:
     intake_slot0.k_p = 0.05
     intake_slot0.k_i = 0.01
     intake_slot0.k_d = 0.002
-

@@ -28,19 +28,15 @@ class RobotContainer:
         self.sendable_chooser = AutoBuilder.buildAutoChooser()
 
         SmartDashboard.putData(self.sendable_chooser)
-        
+
     def configure_named_commands(self):
         NamedCommands.registerCommand(
             "toggle_intake",
-            InstantCommand(
-                lambda: self.hopper_subsystem.queue_state("toggle_hopper")
-            ),
+            InstantCommand(lambda: self.hopper_subsystem.queue_state("toggle_hopper")),
         )
         NamedCommands.registerCommand(
             "shoot",
-            InstantCommand(
-                lambda: self.shooter_subsystem.queue_state("shoot")
-            ),
+            InstantCommand(lambda: self.shooter_subsystem.queue_state("shoot")),
         )
 
     def set_controller_bindings(self):
@@ -56,27 +52,29 @@ class RobotContainer:
         )
 
         self.driver_controller.povRight().onTrue(
-            InstantCommand(
-                lambda: self.hopper_subsystem.queue_state("toggle_hopper")
-            )
+            InstantCommand(lambda: self.hopper_subsystem.queue_state("toggle_hopper"))
         )
-        
+
         self.driver_controller.a().onTrue(
             InstantCommand(
-                lambda: [self.hopper_subsystem.queue_state("outtake", 0), self.shooter_subsystem.outtake()]
+                lambda: [
+                    self.hopper_subsystem.queue_state("outtake", 0),
+                    self.shooter_subsystem.outtake(),
+                ]
             )
         )
 
         self.driver_controller.a().onFalse(
             InstantCommand(
-                lambda: [self.hopper_subsystem.stop_intake_rollers(), self.shooter_subsystem.queue_state("disable_shooter", 0)]
+                lambda: [
+                    self.hopper_subsystem.stop_intake_rollers(),
+                    self.shooter_subsystem.queue_state("disable_shooter", 0),
+                ]
             )
         )
 
         self.driver_controller.b().onTrue(
-            InstantCommand(
-                lambda: self.hopper_subsystem.toggle_intake_roller()
-            )
+            InstantCommand(lambda: self.hopper_subsystem.toggle_intake_roller())
         )
 
         self.driver_controller.rightTrigger().onTrue(

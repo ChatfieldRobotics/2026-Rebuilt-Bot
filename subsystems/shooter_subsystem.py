@@ -39,7 +39,7 @@ class ShooterSubsytem(StateSystem):
         super().periodic()
 
     def get_shooter_rps_from_dist(self, dist: float) -> float:
-        return 8.5 * dist**2 - 40.35 * dist + 80.075
+        return 8.5 * dist**2 - 40.35 * dist + 80.975
 
     @state
     def start_conveyor(self):
@@ -75,8 +75,12 @@ class ShooterSubsytem(StateSystem):
 
     @state
     def advance_balls(self):
-        self.trigger_motor.set_control(VelocityVoltage(ShooterConstants.advancement_motor_rps))
-        self.conveyor_motor.set_control(VelocityVoltage(ShooterConstants.conveyor_motor_rps))
+        self.trigger_motor.set_control(
+            VelocityVoltage(ShooterConstants.advancement_motor_rps)
+        )
+        self.conveyor_motor.set_control(
+            VelocityVoltage(ShooterConstants.conveyor_motor_rps)
+        )
         return True
 
     @state
@@ -97,13 +101,19 @@ class ShooterSubsytem(StateSystem):
         self.set_intake_roller_speed()
 
         return False
-    
+
     def set_intake_roller_speed(self):
-        self.trigger_motor.set_control(VelocityVoltage(ShooterConstants.advancement_motor_rps))
-        self.conveyor_motor.set_control(VelocityVoltage(ShooterConstants.conveyor_motor_rps))
+        self.trigger_motor.set_control(
+            VelocityVoltage(ShooterConstants.advancement_motor_rps)
+        )
+        self.conveyor_motor.set_control(
+            VelocityVoltage(ShooterConstants.conveyor_motor_rps)
+        )
 
     def outtake(self):
-        self.conveyor_motor.set_control(VelocityVoltage(-ShooterConstants.conveyor_motor_rps))
+        self.conveyor_motor.set_control(
+            VelocityVoltage(-ShooterConstants.conveyor_motor_rps)
+        )
 
     @state
     def disable_shooter(self):

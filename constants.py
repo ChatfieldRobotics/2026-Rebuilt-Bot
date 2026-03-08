@@ -1,6 +1,13 @@
 from wpimath.trajectory import TrapezoidProfileRadians
 from wpimath.controller import ProfiledPIDControllerRadians
-from wpimath.geometry import Pose2d, Transform3d, Translation2d, Translation3d, Rotation2d, Rotation3d
+from wpimath.geometry import (
+    Pose2d,
+    Transform3d,
+    Translation2d,
+    Translation3d,
+    Rotation2d,
+    Rotation3d,
+)
 from wpimath.units import inchesToMeters
 from wpimath.kinematics import SwerveDrive4Kinematics
 
@@ -31,8 +38,8 @@ class NeoMotorConstants:
 
 
 class DriveConstants:
-    max_speed_meters_per_second = 15
-    max_angular_speed = 5 * pi
+    max_speed_meters_per_second = 16.5
+    max_angular_speed = 6.0 * pi
     slow_mode_speed_percentage = 0.3
 
     track_width = 0.5969
@@ -102,8 +109,9 @@ class HopperConstants:
 
 
 class FieldConstants:
-    red_hub_pose = Pose2d(11.54, 4.035, Rotation2d(0))
+    red_hub_pose = Pose2d(11.64, 4.035, Rotation2d(0))
     blue_hub_pose = Pose2d(4.706, 4.035, Rotation2d(0))
+
 
 class AutoConstants:
     theta_pid_controller = ProfiledPIDControllerRadians(
