@@ -38,6 +38,12 @@ class RobotContainer:
             "shoot",
             InstantCommand(lambda: self.shooter_subsystem.queue_state("shoot")),
         )
+        NamedCommands.registerCommand(
+            "disable_shooter",
+            InstantCommand(
+                lambda: self.shooter_subsystem.queue_state("disable_shooter", 0)
+            )
+        )
 
     def set_controller_bindings(self):
         self.robot_drive.setDefaultCommand(

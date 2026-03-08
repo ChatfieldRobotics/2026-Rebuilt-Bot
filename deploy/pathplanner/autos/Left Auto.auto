@@ -15,6 +15,18 @@
           "data": {
             "pathName": "Left to Shoot"
           }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.75
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Shoot to Mid"
+          }
         }
       ]
     }

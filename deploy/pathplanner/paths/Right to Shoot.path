@@ -20,12 +20,12 @@
         "y": 0.71623395149786
       },
       "prevControl": {
-        "x": 7.260784593437946,
-        "y": 0.9103138373751789
+        "x": 8.02416547788873,
+        "y": 0.9361911554921551
       },
       "nextControl": {
-        "x": 5.017100447211955,
-        "y": 0.5633523714639417
+        "x": 5.011237147598501,
+        "y": 0.6078592220630898
       },
       "isLocked": false,
       "linkedName": null
@@ -57,7 +57,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Right Shoot End"
     }
   ],
   "rotationTargets": [
@@ -70,7 +70,21 @@
       "rotationDegrees": 180.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1.0287107258938246,
+      "maxWaypointRelativePos": 1.8737811484290359,
+      "constraints": {
+        "maxVelocity": 4.0,
+        "maxAcceleration": 4.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [
     {
       "fieldPosition": {
@@ -116,7 +130,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 2.0,
     "rotation": -145.30484646876607
   },
   "reversed": false,

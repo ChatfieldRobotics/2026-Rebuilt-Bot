@@ -38,8 +38,8 @@ class NeoMotorConstants:
 
 
 class DriveConstants:
-    max_speed_meters_per_second = 16.5
-    max_angular_speed = 6.0 * pi
+    max_speed_meters_per_second = 17.5
+    max_angular_speed = 7.0 * pi
     slow_mode_speed_percentage = 0.3
 
     track_width = 0.5969
